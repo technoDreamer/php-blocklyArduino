@@ -1,0 +1,53 @@
+/* //modifOH */
+#btn_save, #btn_open, #btn_connect, #btn_deconnect {
+    float: left;
+    padding-left: 10px;
+		margin-right:10px
+}
+
+#cont_btn_openSave {
+    position:absolute;
+    right:110px;
+    top:-2px;
+}
+.ligneFicOpen {
+	position:relative;
+	border-top:1px SOLID #999;
+	width:100%;
+	padding:3px 0 0 0;
+	font-size:1.2em;
+}
+
+.nomFicOpen {
+	position:relative;
+	width:60%;
+	text-align:left;
+}
+
+.dateHFicOpen {
+	float:right;
+	text-align:right;
+	font-size:0.8em;
+	font-weight:bold;
+	border-left:1px SOLID #999;
+	padding:0 10px 0 10px; 
+	color:#666;
+}
+
+.supFic {
+	float:right;
+	text-align:left;
+	padding:2px 10px 0 10px; 
+	font-size:0.9em;
+	border-left:1px SOLID #999;
+	cursor:pointer;
+	color:#567;
+}
+
+#save_comment {
+	font-style:italic;
+	font-size:0.9em;
+	margin:8px 0 0 0;
+}
+
+/* //modifOH */
