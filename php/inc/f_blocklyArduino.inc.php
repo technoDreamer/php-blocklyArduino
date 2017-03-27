@@ -17,7 +17,7 @@ function listeFicOpen($userId) {
 	$res=$mysqli->query($rqt);
 	if ($res) {
 		while (list($_nom, $_dateHeure)=$res->fetch_row()) {
-			$_nomFic="$userId-$_dateHeure.xml";
+			$_nomFic="$userId-$_nom-$_dateHeure.xml";
 			if (file_exists('../'.$cheminFichiersXML.'/'.$_nomFic)) $tFic[]=array('nom'=>$_nom,'dateH'=>date("d/m/Y H:i:s",$_dateHeure/1000),'nomFic'=>$_nomFic, 'ts'=>$_dateHeure);
 		}
 	}

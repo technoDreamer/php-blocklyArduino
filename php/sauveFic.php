@@ -26,7 +26,7 @@ function sauveProjet($nom, $nomFic, $uid, $ts, $ecrase) {
 	$res=$mysqli->query($rqt);
 	if ($res) while(list($_dateH)=$res->fetch_row()) {
 		$nbMemeNom++;
-		$exFic[]=$uid.'-'.$_dateH.'.xml';
+		$exFic[]=$uid.'-'.$nom.'-'.$_dateH.'.xml';
 	}
 	
 	if ($_POST['ecrase']=='N') if ($nbMemeNom>0) return "existe"; //si on écrase pas et que le fichier existe déjà, on sort l'erreur
@@ -70,7 +70,7 @@ function sauveProjet($nom, $nomFic, $uid, $ts, $ecrase) {
 	return '';
 }
 
-$nomFic=$_POST['user'].'-'.$_POST['timeS'].'.xml';
+$nomFic=$_POST['user'].'-'.$_POST['nomP'].'-'.$_POST['timeS'].'.xml';
 
 if (($msg=sauveprojet($_POST['nomP'],$nomFic,$_POST['user'],$_POST['timeS'], $_POST['ecrase']))!='') { //erreur lors de la sauvegarde du projet
 	echo '1;'.$msg;

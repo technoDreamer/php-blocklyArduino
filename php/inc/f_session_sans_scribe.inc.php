@@ -58,7 +58,7 @@ function infosSession_user_($login) {
             [version] => 1
 
 	*/
-	$donneesUtilisateur=array('nom'=>'admin', 'prenom'=>'none', 'profil'=>'administrateur', 'login'=>'adminba');
+	$donneesUtilisateur=array('nom'=>'invité', 'prenom'=>'', 'profil'=>'administrateur', 'login'=>'adminba');
 	$_SESSION['_user_']=$donneesUtilisateur;//recupInfosUserLDAP($login); //recup des infos de l'utilisateur dans le ldap
 	$_SESSION['_user_']['login']=$login;
 	//$_SESSION['_user_']['version']=VERSION_SESSION_USER;

@@ -58,11 +58,13 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 ';*/
 	}
 	
+	//on regarde si on doit récupérer le nom du projet dans l'URL
 	$nomProjet='';
 	if (!empty($_GET['nom'])) {
 		$nomProjet=$_GET['nom'];
 	}
 	
+	//on prépare le code JS pour supprimer le nom si c'est un exemple
 	$codeJSsupNom='';
 	if (!empty($_GET['url'])) {
 		if (stristr($_GET['url'],'/examples/') !== false) { //c'est un exemple
@@ -78,9 +80,51 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 		}
 	}
 	
+	//complément JS exécuté au chargement de la page
+	$codeJSdebut='
+	var nomProjet="'.$nomProjet.'";
+	var aEnregistrer=false;
+	'.$codeJSsupNom.$codeJSlangCardDefaut.'
+	var uid="'.$uid.'";
+
+	function verifSaisieNomFichier(texte)
+	{
+		var regex = /^[a-zA-Z0-9._-\séèàçäëïöüôîûâê]+$/;
+		if(!regex.test(texte)) {
+			alert("Le nom de projet saisi est incorrect. Sont autorisées :\n - les lettres\n - les chiffres\n - les caractères \'espace\', - et _\nMerci de modifier le nom saisi.");
+			return false;
+		} else {
+				//alert("Good !");
+				return true;
+		}
+	}
+	';
+	
+	//complément JS exécuté à la fin du chargement de la page - en fin de code HTML
+	$codeJSfin= '
+<script type="text/javascript">
+		$("#btn_open").click(function() {
+		 $.ajax({url: "./php/listeFic.php?action=liste", success: function(result){
+        $("#listeFicOpen").html(result);
+    }});
+		
+		$(window).unload(function() { //si on quitte la page
+			alert("on sort...");
+		});
+	});
+</script>
+	';
+	
+	//case ou s'inscrit le nom du projet en cours
+	$caseNomProjet='
+	          <span style="margin:0 0px 0 150px;font-weight:bold;font-style:italic">projet :</span>
+            <span id="nomProjet" style="font-weight:bold;background-color:#ddd;padding:2px 10px 2px 10px;font-size:1.2em">'.$nomProjet.'</span>
+';
+	
 	$isConnecte=true;
 	$btnOpenSaveConnect='<div id="cont_btn_openSave">'.CR;
-		
+	
+	//code HTML des boutons 	 charger, sauver, connecter/déconnecter 
 	if ($isConnecte) { //connecté
 		$btnOpenSaveConnect.='		<button id="btn_open" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#openModal">
 			<b><span id="span_open"> </span> </b>
@@ -103,7 +147,57 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	
 	$btnOpenSaveConnect.='</div>'.CR;
 	
-	
+	$codeHTMLfenetresModal='
+	<!-- open modal -->
+<div class="modal fade" id="openModal" tabindex="-1" role="dialog" aria-labelledby="openModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="openModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+              <b>Ouvrir...</b>
+              <div id="listeFicOpen">aucun projet...</div>
+              
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- save modal -->
+<div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="saveModalLabel"></h4>
+      </div>
+      <div class="modal-body" style="text-align:center">
+              <b id="saveIdName">nom du projet : </b><input type="text" id="caseNomP" value="'.$nomProjet.'" style="width:60%"> 
+              <button id="btn_saveProj" type="button" class="btn btn-success btn-sm" data-toggle="modal" onMouseDown="if (verifSaisieNomFichier($(\'#caseNomP\').val())) $(this).click()">Enregistrer</button>
+              <div id="save_comment">xxx</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- deconnecte modal -->
+<div class="modal fade" id="deconnecteModal" tabindex="-1" role="dialog" aria-labelledby="deconnecteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="deconnecteModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+              <span id="txtLogout" style="font-weight:bold;"></span>
+              <button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="window.location=\'?logout\'">Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+';
 	
 	
 ?>
@@ -148,7 +242,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 
 <script type="text/javascript" src="lang/code.js"></script>
 
-<!--modifOH-->
+<!--modifOH - scripts JS de complément pour afficher le texte des boutons suivant la langue ainsi que l'action -->
 <script type="text/javascript" src="php/lang/code.js"></script>
 <script type="text/javascript" src="php/js/blocklyArduino.js"></script>
 
@@ -165,24 +259,8 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 <link rel="stylesheet" type="text/css" href="php/css/php.css"/>
 
 <script type="text/javascript">
-	//modifOH
-	var nomProjet="<?php echo $nomProjet; ?>";
-	var aEnregistrer=false;
-	<?php echo $codeJSsupNom; echo $codeJSlangCardDefaut; ?>
-	var uid="<?php echo $uid; ?>";
 
-	function verifSaisieNomFichier(texte)
-	{
-		var regex = /^[a-zA-Z0-9._-\séèàçäëïöüôîûâê]+$/;
-		if(!regex.test(texte)) {
-			alert("Le nom de projet saisi est incorrect. Sont autorisées :\n - les lettres\n - les chiffres\n - les caractères 'espace', - et _\nMerci de modifier le nom saisi.");
-			return false;
-		} else {
-				//alert("Good !");
-				return true;
-		}
-	}
-	//modifOH
+<?php /* modifOH - complément JS exécuté au chargement de la page */ echo $codeJSdebut; ?>
 
 		$(window).load(function() {
 			$(".loading").fadeOut("slow");
@@ -190,7 +268,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	</script>
 </head>
 
-<body onload="BlocklyDuino.init(); initVersionPHP()">
+<body onload="BlocklyDuino.init(); /*modifOH - ajoute les fonctionnalités spécifiques à la version PHP */ initVersionPHP()">
 <div class="loading"></div>
     <div id="divTitre">
             <a href="./index.php"><img id="clearLink" src="media/logo-mini.png" border="0" height="36px" onclick="" />
@@ -198,10 +276,8 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
             <b>Blockly@rduino</b> : 
             <span id="title"></span>
             
-            <span style="margin:0 0px 0 150px;font-weight:bold;font-style:italic">projet :</span>
-            <span id="nomProjet" style="font-weight:bold;background-color:#ddd;padding:2px 10px 2px 10px;font-size:1.2em"><?php echo $nomProjet; ?></span>
-
-<?php echo $btnOpenSaveConnect;?>
+<?php /* modifOH - code HTML de la case nom de projet */ echo $caseNomProjet; ?>
+<?php /* modifOH - code HTML des boutons */ echo $btnOpenSaveConnect; ?>
 
 		<button id="btn_about" type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#aboutModal">
 			<b><span id="span_about"> </span></b>
@@ -461,57 +537,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
   </div>
 </div>
 
-
-<!-- open modal //modifOH -->
-<div class="modal fade" id="openModal" tabindex="-1" role="dialog" aria-labelledby="openModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
-        <h4 class="modal-title" id="openModalLabel"></h4>
-      </div>
-      <div class="modal-body">
-              <b>Ouvrir...</b>
-              <div id="listeFicOpen">aucun projet...</div>
-              
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- save modal //modifOH -->
-<div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
-        <h4 class="modal-title" id="saveModalLabel"></h4>
-      </div>
-      <div class="modal-body" style="text-align:center">
-              <b id="saveIdName">nom du projet : </b><input type="text" id="caseNomP" value="<?php echo $nomProjet; ?>" style="width:60%"> 
-              <button id="btn_saveProj" type="button" class="btn btn-success btn-sm" data-toggle="modal" onMouseDown="if (verifSaisieNomFichier($('#caseNomP').val())) $(this).click()">Enregistrer</button>
-              <div id="save_comment">xxx</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- deconnecte modal //modifOH -->
-<div class="modal fade" id="deconnecteModal" tabindex="-1" role="dialog" aria-labelledby="deconnecteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
-        <h4 class="modal-title" id="deconnecteModalLabel"></h4>
-      </div>
-      <div class="modal-body">
-              <span id="txtLogout" style="font-weight:bold;"></span>
-              <button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="window.location='?logout'">Ok</button>
-      </div>
-    </div>
-  </div>
-</div>
-
+<?php echo $codeHTMLfenetresModal; ?>
 
 <!-- info first connect modal -->
 <div class="modal fade" id="firstModal" tabindex="-1" role="dialog" aria-labelledby="firstModalLabel" aria-hidden="true">
@@ -791,19 +817,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	</div>
 </div>
 
-<script type="text/javascript">
-//modifOH
-	$("#btn_open").click(function() {
-		 $.ajax({url: "./php/listeFic.php?action=liste", success: function(result){
-        $("#listeFicOpen").html(result);
-    }});
-		/*//$("#listeFicOpen").html("New:<?php echo listeFicOpen();?>");*/
-		$(window).unload(function() { //si on quitte la page
-			alert("on sort...");
-		});
-	});
-//modifOH
-</script>
+<?php /* modifOH - code JS après le chargement de la page */ echo  $codeJSfin; ?>
 
 </body>
 </html>
