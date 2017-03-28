@@ -18,4 +18,4 @@ A la racine de blocklyArduino, il faut créer un lien symbolique  'datas'  qui po
 Remarques :
 Les projets blocklyArduino sont :
  - enregistrés sous forme de fichier xml dans le dossier datas (qui pointe vers php/files) sous forme   login-nom_du_projet-10000000.xml    (login remplacé par le login de l'utilisateur, nom_du_projet par le nom du projet :) et 10000000 par le timestamp de la date et l'heure d'enregistrement)
- - stockés dans la base de données sous la forme d'une association entre l'utilisateur (user) le nom du projet (nom) et le timestamp de la date et heure d'enregistrement. Le nom du fichier physique étant recréé d'après ces infos pour être ouvert.
+ - stockés dans la base de données sous la forme d'une association entre l'utilisateur (user) le nom du projet (nom) et le timestamp de la date et heure d'enregistrement. Le nom du fichier physique étant recréé d'après ces infos pour être ouvert. 
