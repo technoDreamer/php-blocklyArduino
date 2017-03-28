@@ -13,6 +13,7 @@
 define ('VERSION_SESSION_USER', 1);
 
 function getCasUid() {
+	require_once('./CAS/cas_auth.inc.php');
 	//authentification et récupération des informations de l'utilisateur
 	cas_instance();
 	cas_auth();
@@ -91,6 +92,7 @@ function initSession() {
     session ouverte et uid de l'utilisateur retourné dans la variable $uid
 -------------------------------*/
 function recupUid() {
+	require_once('./CAS/cas_auth.inc.php');
 	global $uid;
 
 	//nom de session compatible envole
