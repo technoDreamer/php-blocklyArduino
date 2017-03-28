@@ -10,5 +10,6 @@ var MSG2 = {
   deconnecteModalLabel:"Déconnexion ...",
   txtLogout:"Etes-vous sûr de vouloir vous déconnecter ?",
   btnSaveProj:"Enregistrer",
-//
+  span_saveXML:" exporter en fichier XML",
+  span_fakeload:" importer fichier XML"
 };

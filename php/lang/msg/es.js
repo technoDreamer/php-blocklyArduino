@@ -10,5 +10,7 @@ var MSG2 = {
   saveIdName:"project name : ",
   txtLogout:"Sure to logout ?",
   btnSaveProj:"Save",
+  span_saveXML:" export to XML file",
+  span_fakeload:" import XML file"
 //
 };

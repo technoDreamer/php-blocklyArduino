@@ -157,6 +157,8 @@ Code2.initLanguage = function() {
  	$('#deconnecteModalLabel').text(MSG2['deconnecteModalLabel']);
  	$('#txtLogout').text(MSG2['txtLogout']);
  	$('#btnSaveProj').text(MSG2['btnSaveProj']);
+ 	$('#span_saveXML').text(MSG2['span_saveXML']);
+ 	$('#span_fakeload').text(MSG2['span_fakeload']);
 ///modifOH
   
   $("xml").find("category").each(function() {
