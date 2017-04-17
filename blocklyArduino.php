@@ -200,8 +200,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 ';
 	
 	
-?>
-<html>
+?><html>
 <head>
 <link rel="icon" type="image/png" href="favicon.png" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -236,8 +235,8 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 <script type="text/javascript" src="generators/arduino_resume.js"></script>
 
 <!--TechnoZone51-->
-<script type="text/javascript" src="core_BlocklyArduino/html2canvas.js"></script>
-<script type="text/javascript" src="core_BlocklyArduino/canvas2image.js"></script>
+<script type="text/javascript" src="core_BlocklyArduino/TZ51/html2canvas.js"></script>
+<script type="text/javascript" src="core_BlocklyArduino/TZ51/canvas2image.js"></script>
 <!--Fin TZ51-->
 
 <script type="text/javascript" src="lang/code.js"></script>
@@ -250,32 +249,37 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 <script type="text/javascript" src="http://codebender.cc/embed/compilerflasher.js"></script-->
 <!--offline plugin-->
 <script type="text/javascript" src="core_BlocklyArduino/compilerflasher.js"></script>
+<script type="text/javascript" src="core_BlocklyArduino/smoothie.js"></script>
+<script type="text/javascript" src="core_BlocklyArduino/clipboard.min.js"></script> 
+
 
 <link rel="stylesheet" type="text/css" href="css/blockly@rduino.css"/>
 <!--link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"-->
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.SEB.css"/>
 <link rel="stylesheet" type="text/css" href="css/bootstrap-toggle.min.css" />
 <link rel="stylesheet" type="text/css" href="css/prettify.css"/>
+
+<!--modifOH - feuille de style CSS propre à ce qui est rajouté sur la page -->
 <link rel="stylesheet" type="text/css" href="php/css/php.css"/>
 
 <script type="text/javascript">
 
 <?php /* modifOH - complément JS exécuté au chargement de la page */ echo $codeJSdebut; ?>
 
-		$(window).load(function() {
-			$(".loading").fadeOut("slow");
-		});
-	</script>
+	$(window).load(function() {
+		$(".loading").fadeOut("slow");
+	});
+</script>
 </head>
 
 <body onload="BlocklyDuino.init(); /*modifOH - ajoute les fonctionnalités spécifiques à la version PHP */ initVersionPHP()">
 <div class="loading"></div>
     <div id="divTitre">
-            <a href="./index.php"><img id="clearLink" src="media/logo-mini.png" border="0" height="36px" onclick="" />
-            </a> 
-            <b>Blockly@rduino</b> : 
-            <span id="title"></span>
-            
+		<a href="./index.html"><img id="clearLink" src="media/logo-mini.png" border="0" height="36px" onclick="" />
+		</a> 
+		<b>Blockly@rduino</b> : 
+		<span id="title"></span>
+
 <?php /* modifOH - code HTML de la case nom de projet */ echo $caseNomProjet; ?>
 <?php /* modifOH - code HTML des boutons */ echo $btnOpenSaveConnect; ?>
 
@@ -290,12 +294,22 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	<!-- 		<button id="btn_switch" class="btn btn-default"> -->
 	<!-- 			<span class="glyphicon glyphicon-retweet"> </span> -->
 	<!-- 		</button> -->
+			<!--outdated
 			<button id="btn_picture" class="btn btn-danger btn-block text-left">
 				<span class="glyphicon glyphicon-alert"> </span>
 				<span id="span_picture"> </span>
+			</button> -->
+			<button id="btn_configGlobal" class="btn btn-danger btn-block text-left" data-toggle="modal" data-target="#configModalGlobal">
+				<span class="glyphicon glyphicon-alert"> </span>
+				<span id="configGlobalLabel"> </span>
 			</button>
+				<div id="div_miniPicture">
+					<a id="miniCard">
+						<img id="arduino_card_miniPicture" />
+					</a>
+				</div>
 			<button id="btn_config" class="text-left btn btn-warning btn-block " data-toggle="modal" data-target="#configModal">
-				<span class="glyphicon glyphicon-th-list"> </span>
+				<span class="glyphicon glyphicon-cog"> </span>
 				<span id="span_config"> </span>
 			</button>
 			<a href="#" id="btn_config_kit" target="_blank" class="text-left btn btn-warning btn-block hidden" role='button'>
@@ -305,6 +319,12 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	    </div>
 	    <div id="menuPanelBlockly" class="margin-top-5">
 	            <ul id="ul_nav" role="tablist">
+	            <li role="presentation" id="tab_wiring">
+	                 <a href="#content_wiring" aria-controls="content_wiring" role="tab" data-toggle="tab">
+	                     <span class="glyphicon glyphicon-blackboard"></span>
+	                     <span id="a_wiring"> </span>
+	                 </a>
+	            </li>
 	            <li role="presentation" id="tab_supervision">
 	                 <a href="#content_supervision" aria-controls="content_supervision" role="tab" data-toggle="tab">
 	                     <span class="glyphicon glyphicon-transfer"></span>
@@ -357,15 +377,25 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 				<span id="span_create_example"> </span>
 			</a>
 		</div> 
-		<div id="div_miniPicture">
-		    <a id="miniCard">
-		        <img id="arduino_card_miniPicture" />
-		    </a>
+		<div id="div_accessibility_button">
+			<button id="btn_font" class="btn btn-warning text-left">
+		       <!--span class="glyphicon glyphicon-briefcase"> </span-->
+		       <span class="glyphicon glyphicon-text-height"> </span>
+		    </button>
+			<button id="btn_colors" class="btn btn-warning text-left jscolor {valueElement:null,value:'F0AD4E'}" onchange="update(this.jscolor)">
+		       <span class="glyphicon glyphicon-tint"> </span>
+		    </button>
+			<script>
+					function update(jscolor) {
+						// 'jscolor' instance can be used as a string
+						document.getElementById('menuPanel').style.backgroundColor = jscolor;
+					}
+			</script>
 		</div>
 		<div id="div_tools_button">
-			<button id="btn_configGlobal" class="btn btn-warning text-left" data-toggle="modal" data-target="#configModalGlobal">
-		       <span class="glyphicon glyphicon-cog"> </span>
-		   </button>
+			<a href="./index.html" id="btn_reset" class="btn btn-danger text-left">
+				   <span class="glyphicon glyphicon-off"> </span>
+			</a>
 			<button id="btn_RGB" class="btn btn-primary text-left">
 		       <span class="glyphicon glyphicon-th"> </span>
 		    </button>
@@ -382,22 +412,17 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 		   </a>
 		   <a id="btn_tuto" class='btn btn-success btn-info text-left' href="http://blockly.technologiescollege.fr/forum/" target="_blank" role='button'>
 		       <span class="glyphicon glyphicon-question-sign"></span>
-		   </a>		   
-			<!--input class="jscolor {hash:true}" onchange="update(this.jscolor)">
-			<script>
-					function update(jscolor) {
-						// 'jscolor' instance can be used as a string
-						document.getElementById('menuPanel').style.backgroundColor = jscolor;
-						Blockly.Blocks.APDS9960.HUE = "#" + jscolor;
-					}
-			</script-->
+		   </a>	
 		</div>       
     </div>
 
     <!-- Nav tabs -->
     <div id="divTabpanel" role="tabpanel">
         <!-- Tab panes -->
-        <div id="content_area" class="tab-content">
+        <div id="content_area" class="tab-content">        
+			<div id="content_wiring" class="tab-pane">
+				<iframe width="100%" height="100%" frameborder="0" src="https://fr.robom.ru"></iframe>
+            </div>
 			<div id="content_blocks" class="tab-pane active" style="position: relative;">
 				<button id="btn_delete" class="btn btn-danger">
 					<span class="glyphicon glyphicon-erase"> </span>
@@ -428,7 +453,10 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
                     <span id="icon_btn_inline" class="glyphicon glyphicon-option-vertical"> </span>
                 </button>
 				<div id="toggle" class="modal-content" style="display: none;">
-					<pre id="pre_previewArduino"></pre>
+					<pre id="pre_previewArduino"></pre>			
+					<button id="btn_CopyCode" class="btn btn-warning" data-clipboard-action="copy" data-clipboard-target="#pre_previewArduino">
+						<span class="glyphicon glyphicon-duplicate"> </span>
+					</button>
 				</div>
 			</div>
 			<div id="content_arduino" class="tab-pane">
@@ -462,10 +490,10 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 					<span class="glyphicon glyphicon-log-in"> </span>
 					<span id="span_flash_local"> </span>
 				</a>		
-				<a id="btn_getResult" class='btn btn-arduino' href="http://127.0.0.1:5005" role='button' target='_blank'>
+				<!--a id="btn_getResult" class='btn btn-arduino' href="http://127.0.0.1:5005" role='button' target='_blank'>
 					<span class="glyphicon glyphicon-list-alt"> </span>
 					<span id="span_flash_local_result"> </span>
-				</a>
+				</a-->
                 <button id="btn_pasteIDEArduino" class="btn btn-arduino">
 					<span class="glyphicon glyphicon-random"> </span>
 					<span id="span_pasteIDEArduino"> </span>
@@ -487,9 +515,9 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
             </div>
             <div id="content_supervision" class="tab-pane">
             </div>
-            <div id="content_xml" class="tab-pane">
+            <!--div id="content_xml" class="tab-pane">
                 <pre id="pre_xml"></pre>
-            </div>
+            </div-->
         </div>
     </div>
     </div>
@@ -510,17 +538,22 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 			  <br />
 			  <span><b>Blockly@rduino</b></span> (<a href="https://github.com/technologiescollege/Blockly-at-rduino" target='blank'>Github</a>)
               <span id="aboutBody" style="font-style: italic;"> </span>
+              <br /> - Fred LIN (@gasolin) - BlocklyDuino : (<a href='https://github.com/BlocklyDuino/BlocklyDuino' target='blank'>'https://github.com/BlocklyDuino/BlocklyDuino</a>)
               <br /> - Alan YORINKS - PyMata-aio : (<a href='http://mryslab.blogspot.fr' target='blank'>http://mryslab.blogspot.fr</a>)
 			  <br /> - Carlos PEREIRA ATENCIO - Ardublockly : (<a href='https://github.com/carlosperate/ardublockly' target='blank'>https://github.com/carlosperate/ardublockly</a>)
               <br /> - Bernard REMOND - rDuino-Compiler-Uploader-Server : (<a href='https://github.com/nbremond77' target='blank'>https://github.com/nbremond77</a>)
-              <br /> - Fred LIN (@gasolin) - BlocklyDuino : (<a href='https://github.com/BlocklyDuino/BlocklyDuino' target='blank'>'https://github.com/BlocklyDuino/BlocklyDuino</a>)
               <br /> - Blockly : (<a href='https://developers.google.com/blockly' target='blank'>https://developers.google.com/blockly</a>)
               <br /> - Bootstrap (<a href='http://getbootstrap.com' target='blank'>http://getbootstrap.com</a>)
+              <br /> - Bootstrap Toggle (<a href='http://www.bootstraptoggle.com/' target='blank'>http://www.bootstraptoggle.com/</a>)
 			  <br /> - Codebender - CompilerFlasher : (<a href='https://codebender.cc' target='blank'>https://codebender.cc</a>)
               <br /> - JQuerry (<a href='https://jquery.com' target='blank'>https://jquery.com)</a>
               <br /> - HeadJS (<a href='http://headjs.com/' target='blank'>http://headjs.com/)</a>
+              <br /> - SmoothieCharts (<a href='http://smoothiecharts.org/' target='blank'>http://smoothiecharts.org/)</a>
+              <br /> - ROBOM.RU (<a href='https://robom.ru/' target='blank'>https://robom.ru/)</a>		
+			  <br />	  
+			  <b><a href="http://framaforms.org/blocklyrduino-utilisateurs-1490560876" target='blank'><font size="12"><span id="span_forms_about" style="font-style: bold;"> </span></font></a></b>
 			  <br />
-			  <br /><i>version 21-03-2017 - v2.3 "Kit Cat"</i>
+			  <br /><i>version 13-04-2017 - v2.4 "Wiring"</i>
 			  <br />
 			  <br />
 			  <div align="center" id="paypal_about">
@@ -537,7 +570,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
   </div>
 </div>
 
-<?php echo $codeHTMLfenetresModal; ?>
+<?php /* modifOH - ajout du code des fenêtres modales pour l'ouverture, l'enregistrement et la connexion */ echo $codeHTMLfenetresModal; ?>
 
 <!-- info first connect modal -->
 <div class="modal fade" id="firstModal" tabindex="-1" role="dialog" aria-labelledby="firstModalLabel" aria-hidden="true">
@@ -566,6 +599,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 				<input type="image" src="https://www.paypalobjects.com/fr_FR/FR/i/btn/btn_donateCC_LG.gif" name="submit" alt="PayPal, le réflexe sécurité pour payer en ligne"/>
 				<img alt="" border="0" src="https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif" width="1" height="1"/>
 				</form>
+				<b><a href="http://framaforms.org/blocklyrduino-utilisateurs-1490560876" target='blank'><font size="18"><span id="span_forms_videomodal" style="font-style: bold;"> </span></font></a></b>
 			  </div>
 	  </div>      
       <div class="modal-footer">
@@ -666,36 +700,55 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
     </div>
 </div>
 <!-- videos modal -->
-<div id="videoModal" class="modal-dialog" style="display:none">
+<div id="videoModal" class="modal-dialog" style="display:none;width: 700px;">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
         <h4 class="modal-title" id="videoModalLabelTitle"></h4>
       </div>
-	  <div class="modal-body text-center">
-		<span id="videoModalLabel1"> </span><br/>
-        <div style="float: none; clear: both;">
-            <embed id="videoModal1"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
-        </div>
-	  </div>
-	  <div class="modal-body text-center">
-		<span id="videoModalLabel2"> </span><br/>
-		<div style="float: none; clear: both;">
-            <embed id="videoModal2"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
-        </div>
-	  </div>
-	  <div class="modal-body text-center">
-		<span id="videoModalLabel3"> </span><br/>
-        <div style="float: none; clear: both;">
-            <embed id="videoModal3"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
-        </div>
-	  </div>
-	  <div class="modal-body text-center">
-		<span id="videoModalLabel4"> </span><br/>
-        <div style="float: none; clear: both;">
-            <embed id="videoModal4"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
-        </div>
-	  </div>
+	  <div class="modal-body text-center" style=" overflow:auto;">
+		  <div style="width: 45%;float: left;">
+			<a href="https://mediacad.ac-nantes.fr/m/2018" target="_blank">
+				<span id="videoModalLabel1"> </span>
+			</a>
+			<br/>
+	        <div style="float: none; clear: both;">
+	            <embed id="videoModal1"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
+	        </div>
+			<a href="https://mediacad.ac-nantes.fr/m/2017" target="_blank">
+				<span id="videoModalLabel2"> </span>
+			</a>
+			<br/>
+			<div style="float: none; clear: both;">
+	            <embed id="videoModal2"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
+	        </div>
+	
+			<a href="https://mediacad.ac-nantes.fr/m/2016" target="_blank">
+				<span id="videoModalLabel3"> </span>
+			</a>
+			<br/>
+	        <div style="float: none; clear: both;">
+	            <embed id="videoModal3"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
+	        </div>
+	       </div>
+		  <div style="width: 45%;float: left; margin-left: 10%;">
+	
+			<a href="https://mediacad.ac-nantes.fr/m/2020" target="_blank">
+				<span id="videoModalLabel4"> </span>
+			</a>
+			<br/>
+	        <div style="float: none; clear: both;">
+	            <embed id="videoModal4"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
+	        </div>
+	        
+			<a href="https://www.youtube.com/playlist?list=PLwy0yw3Oq4-uFJl0j-efUAAlfCbqtcTMr" target="_blank">
+				<span id="videoModalLabel5"> </span>
+			</a>
+	        <div style="float: none; clear: both;">
+	            <embed id="videoModal5"  wmode="transparent" allowfullscreen="true" title="Adobe Flash Player"/>
+	        </div>
+		  </div>
+    	</div>
     </div>
 </div>
 <!-- toolbox config modal -->
@@ -715,6 +768,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 				<option value="toolbox_arduino_2"></option>
 				<option value="toolbox_arduino_3"></option>
 				<option value="toolbox_arduino_4"></option>
+				<option value="toolbox_user"></option> <!-- NBR added -->
 				<option value="toolbox_arduino_all"></option>
 			</select>
 		</div>
@@ -785,12 +839,12 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 					<div style="clear : both;">
 						<a href="http://info.technologiescollege.fr/wiki/doku.php/fr/arduino/blockly_rduino/configglobale"  target='blank'><img src="media/codebenderOUarduino.jpg" height="35px"/></a><br/>
 						<label id="span_OnOffLine"> </label><br/>
-						<input id="toggle-WebAccess" data-toggle="toggle" data-on="" data-off="" data-onstyle="codebender" data-offstyle="arduino" data-width="120" type="checkbox"/><br />
+						<input id="toggle-WebAccess" data-toggle="toggle" data-on="<span id='toggle-WebAccess-on'> </span>" data-off="<span id='toggle-WebAccess-off'> </span>" data-onstyle="codebender" data-offstyle="arduino" data-width="120" type="checkbox"/><br />
 						<br/>
 						<label id="span_Upload"> </label>
 						<br/>
 						<span id="span_Upload_local"> </span>
-						<input id="toggle-LocalCodebender" data-toggle="toggle" data-on="" data-off="" data-onstyle="arduino" data-offstyle="codebender" data-width="120" type="checkbox"/>
+						<input id="toggle-LocalCodebender" data-toggle="toggle" data-on="<span id='toggle-LocalCodebender-on'> </span>" data-off="<span id='toggle-LocalCodebender-off'> </span>" data-onstyle="arduino" data-offstyle="codebender" data-width="120" type="checkbox"/>
 						<span id="span_Upload_codebender"> </span><br/>
 						<br/>
 						<label id="span_Download"> </label>
