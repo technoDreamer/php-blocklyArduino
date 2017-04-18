@@ -78,6 +78,8 @@ function initSession() {
 	else 
 	//sinon appel à l'authentification du cas		    
 		$uid = getCasUid();
+	if (!isset($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
+
 }
 
 
@@ -92,6 +94,7 @@ function initSession() {
     session ouverte et uid de l'utilisateur retourné dans la variable $uid
 -------------------------------*/
 function recupUid() {
+	//echo getcwd();exit();
 	require_once('./CAS/cas_auth.inc.php');
 	global $uid;
 
@@ -132,7 +135,9 @@ function recupUid() {
 		if(!isset($_SESSION['_user_']['version'])) $sessionPasOk=true;
 		else if ($_SESSION['_user_']['version']<VERSION_SESSION_USER) $sessionPasOk=true;
 	}
-	
+
+	if (!isset($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
+
 	if ($sessionPasOk) infosSession_user_($uid);
 }
 

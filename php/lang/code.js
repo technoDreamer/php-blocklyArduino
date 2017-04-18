@@ -155,7 +155,11 @@ Code2.initLanguage = function() {
  	$('#save_comment').text(MSG2['save_comment']);
  	$('#saveIdName').text(MSG2['saveIdName']);
  	$('#deconnecteModalLabel').text(MSG2['deconnecteModalLabel']);
+ 	$('#connecteModalLabel').text(MSG2['connecteModalLabel']);
+ 	$('#errorModalLabel').text(MSG2['errorModalLabel']);
  	$('#txtLogout').text(MSG2['txtLogout']);
+ 	$('#txtNomU').text(MSG2['txtNomU']);
+ 	$('#txtPwdU').text(MSG2['txtPwdU']);
  	$('#btnSaveProj').text(MSG2['btnSaveProj']);
  	$('#span_saveXML').text(MSG2['span_saveXML']);
  	$('#span_fakeload').text(MSG2['span_fakeload']);

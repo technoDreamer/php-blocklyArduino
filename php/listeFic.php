@@ -1,14 +1,24 @@
 <?php
-include ('./inc/f_session_scribe.inc.php');
-//doit être appelé avant initSession qui utilise le ldap pour trouver les infos sur l'utilisateur courant
-include ('./inc/f_ldap_scribe.inc.php');
-//initialisation de la Session et recup de l'uid, sinon, on retourne à l'authentification du CAS
-initSession();
+include('./config/config.inc.php');
+
+if ($USE_SCRIBE) { //on utilise l'authentification CAS par le scribe
+
+	include ('./inc/f_session_scribe.inc.php');
+	//doit être appelé avant initSession qui utilise le ldap pour trouver les infos sur l'utilisateur courant
+	include ('./inc/f_ldap_scribe.inc.php');
+
+} else { //pas scribe
+
+	include ('./inc/f_session_sans_scribe.inc.php');
+
+}
 
 include_once('./inc/c_parametres.inc.php');
 include_once('./inc/f_mysql.inc.php');
 
 include_once('./inc/f_blocklyArduino.inc.php');
+
+initSession();
 
 recupUid();
 

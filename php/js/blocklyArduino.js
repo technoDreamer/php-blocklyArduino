@@ -4,6 +4,7 @@ function initVersionPHP() {
 	Code2.initLanguage();
 	$('#btn_saveProj').on("click", bA_prepareXmlFileAndSave);
 	$('#btn_delete').on("click", bA_discard);
+	$('#btn_saveXML').on("click", BlocklyDuino.saveXmlFile2);
 	//pour cacher la fenêtre affichée au début
 	//$('#firstModal').modal('hide');	
 	window.sessionStorage.msg_first_seen = true;
@@ -81,7 +82,7 @@ bA_prepareXmlFileAndSave = function () {
 	var newNomProjet=$("#caseNomP").val();
 	
 	var onEcrase='N';	//changement de nom du projet
-	if (newNomProjet==nomProjet) onEcrase='O'; //réenregistrement donc on écrase
+	if ((newNomProjet==nomProjet) && !nonDefini) onEcrase='O'; //réenregistrement donc on écrase
 	
 	//var codeRetour=
 	lanceSauvegardeFichier(newNomProjet, onEcrase, dataXML, uid, datenow); //on sauve sans écraser
@@ -142,60 +143,47 @@ function lanceSauvegardeFichier(newNomProjet, onEcrase, dataXML, uid, datenow) {
 }
 
 /**
- // * Load blocks from db file.
+ * Creates an XML file containing the blocks from the Blockly workspace and
+ * prompts the users to save it into their local file system.
  */
-/*BlocklyDuino.loadFic = function () {
-  var files = event.target.files;
-  // Only allow uploading one file.
-  if (files.length != 1) {
-    return;
-  }
-
-  // FileReader
-  var reader = new FileReader();
-  reader.onloadend = function(event) {
-    var target = event.target;
-    // 2 == FileReader.DONE
-    if (target.readyState == 2) {
-      try {
-        var xml = Blockly.Xml.textToDom(target.result);
-      } catch (e) {
-        alert(MSG['xmlError']+'\n' + e);
-        return;
-      }
-      var count = BlocklyDuino.workspace.getAllBlocks().length;
-      if (count && confirm(MSG['xmlLoad'])) {
-    	  BlocklyDuino.workspace.clear();
-      }
-      $('#tab_blocks a').tab('show');
-      Blockly.Xml.domToWorkspace(BlocklyDuino.workspace, xml);
-      BlocklyDuino.selectedTab = 'blocks';
-      BlocklyDuino.renderContent();
-      
-	  	// load toolbox
-      var elem = xml.getElementsByTagName("toolbox")[0];
-      if (elem != undefined) {
-				var node = elem.childNodes[0];
-				window.localStorage.toolbox = node.nodeValue;
-				$("#toolboxes").val(node.nodeValue);
-				
-				// load toolbox categories
-				elem = xml.getElementsByTagName("toolboxcategories")[0];
-				if (elem != undefined) {
-					node = elem.childNodes[0];
-					window.localStorage.toolboxids = node.nodeValue;
-				}
-		
-				var search = BlocklyDuino.addReplaceParamToUrl(window.location.search, 'toolbox', $("#toolboxes").val());
-				window.location = window.location.protocol + '//'
-						+ window.location.host + window.location.pathname
-						+ search;
-			}
-
-    }
-    // Reset value of input after loading because Chrome will not fire
-    // a 'change' event if the same file is loaded again.
-    $('#load').val('');
-  };
-  reader.readAsText(files[0]);
-};*/
+BlocklyDuino.saveXmlFile2 = function () {
+	var xml = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+	
+	var toolbox = window.localStorage.toolbox;
+	if (!toolbox) {
+		toolbox = $("#toolboxes").val();
+	}
+	
+	if (toolbox) {
+		var newel = document.createElement("toolbox");
+		newel.appendChild(document.createTextNode(toolbox));
+		xml.insertBefore(newel, xml.childNodes[0]);
+	}
+	
+	var toolboxids = window.localStorage.toolboxids;
+	if (toolboxids === undefined || toolboxids === "") {
+		if ($('#defaultCategories').length) {
+			toolboxids = $('#defaultCategories').html();
+		}
+	}
+	
+	if (toolboxids) {
+		var newel = document.createElement("toolboxcategories");
+		newel.appendChild(document.createTextNode(toolboxids));
+		xml.insertBefore(newel, xml.childNodes[0]);
+	}
+	
+	var data = Blockly.Xml.domToPrettyText(xml);
+	//prépare le nom du fichier d'export XML
+	var datenow = Date.now();
+	var theUid="";
+	if (uid!="adminBA") theUid=uid+'-';
+	var theNomProjet="";
+	if (nomProjet!="") theNomProjet=nomProjet+"-";
+	var uri = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+	$(this).attr({
+	            "download": "blockly_arduino"+"-"+theUid+theNomProjet+datenow+".xml",
+				"href": uri,
+				"target": "_blank"
+	});
+};

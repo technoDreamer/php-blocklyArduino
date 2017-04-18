@@ -29,15 +29,41 @@ include_once('./inc/f_blocklyArduino.inc.php');
 chdir('./..');
 
 recupUid();
-
-	if ($uid=='admin') $nomUser='Admin';
-	else $nomUser=$_SESSION['_user_']['prenom']." ".$_SESSION['_user_']['nom'];
-	//gère la langue et la carte par défaut
+$isConnecte=true;
 	$ajoutURL=array();
+//gère la langue et la carte par défaut
 	$codeJSlangCardDefaut='';
 	$manque=false;
+	
+if (empty($uid)) { //non connecté
+	//echo "non connecté...";
+	//exit();
+	$isConnecte=false;
+	
+	if (empty($_GET['connecte'])) {$manque=true; $ajoutURL[]='connecte=no';} else $ajoutURL[]='connecte='.$_GET['connecte']; //fr
+	
+}
+else { //utilisateur connecté
+	if ($uid=='admin') $nomUser='Admin';
+	else $nomUser=$_SESSION['_user_']['prenom']." ".$_SESSION['_user_']['nom'];
+}
+
+	$errorLogin=false;
+	$ajoutCat='';
+			
 	if (empty($_GET['lang'])) {$manque=true; $ajoutURL[]='lang=fr';} else $ajoutURL[]='lang='.$_GET['lang']; //fr
-if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $ajoutURL[]='card='.$_GET['card']; //arduino_uno;
+	if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $ajoutURL[]='card='.$_GET['card']; //arduino_uno;
+	$dejaLance=false;
+	if (isset($_SESSION['premLancement'])) if($_SESSION['premLancement']==0) {
+		$dejaLance=true;
+	}
+	$_SESSION['premLancement']=0;
+	if (!$dejaLance) if (empty($_GET['toolbox'])) {
+		$manque=true; 
+		$ajoutURL[]='toolbox=toolbox_algo';
+		$ajoutCat='if (window.localStorage.toolboxids.indexOf("CAT_ARDUINO")==-1) window.localStorage.toolboxids=window.localStorage.toolboxids+",CAT_ARDUINO";';
+	} else 
+		$ajoutURL[]='toolbox='.$_GET['toolbox']; //arduino_uno;
 	if ($manque) {
 		$prems=true;
 		foreach ($ajoutURL as $_ajout) {
@@ -56,10 +82,15 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
     window.history.pushState(chUrl, "Title", newchUrl);
     alert(newchUrl);
 ';*/
+	} else { //on ne manque pas, donc on ne recharge pas la page
+		if (!empty($_SESSION['error'])) if ($_SESSION['error']=='login') {
+			$_SESSION['error']='';
+			$errorLogin=true;
+		}
 	}
 	
 	//on regarde si on doit récupérer le nom du projet dans l'URL
-	$nomProjet='';
+	$nomProjet='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	if (!empty($_GET['nom'])) {
 		$nomProjet=$_GET['nom'];
 	}
@@ -79,14 +110,24 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 			}
 		}
 	}
-	
+	$codeJSerror='';
+	if ($errorLogin) {
+		$codeJSerror='
+		$(document).ready(function(){
+			$("#txtError").html("<b>Erreur de connexion !</b><br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;Problème de login ou de mot de passe...");
+			$("#errorModal").modal("show");
+		});
+		
+		';
+	}
+
 	//complément JS exécuté au chargement de la page
 	$codeJSdebut='
 	var nomProjet="'.$nomProjet.'";
 	var aEnregistrer=false;
 	'.$codeJSsupNom.$codeJSlangCardDefaut.'
 	var uid="'.$uid.'";
-
+		'.$codeJSerror.$ajoutCat.'
 	function verifSaisieNomFichier(texte)
 	{
 		var regex = /^[a-zA-Z0-9._-\séèàçäëïöüôîûâê]+$/;
@@ -103,11 +144,12 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	//complément JS exécuté à la fin du chargement de la page - en fin de code HTML
 	$codeJSfin= '
 <script type="text/javascript">
+		//window.localStorage.toolboxids="CAT_LOGIC,CAT_LOOPS";
+
 		$("#btn_open").click(function() {
 		 $.ajax({url: "./php/listeFic.php?action=liste", success: function(result){
         $("#listeFicOpen").html(result);
     }});
-		
 		$(window).unload(function() { //si on quitte la page
 			alert("on sort...");
 		});
@@ -116,12 +158,16 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	';
 	
 	//case ou s'inscrit le nom du projet en cours
-	$caseNomProjet='
-	          <span style="margin:0 0px 0 150px;font-weight:bold;font-style:italic">projet :</span>
-            <span id="nomProjet" style="font-weight:bold;background-color:#ddd;padding:2px 10px 2px 10px;font-size:1.2em">'.$nomProjet.'</span>
+	$caseNomProjet='';
+	if ($isConnecte) $caseNomProjet='
+	          <div style="position:absolute;top:7px;right:500px;z-index:120">
+	          	<span style="font-weight:bold;font-style:italic">projet :</span>
+            	<span id="nomProjet" style="font-weight:bold;background-color:#ddd;padding:2px 10px 2px 10px;font-size:1.2em">'.$nomProjet.'</span>
+            </div>
 ';
 	
-	$isConnecte=true;
+	
+//	$isConnecte=true;
 	$btnOpenSaveConnect='<div id="cont_btn_openSave">'.CR;
 	
 	//code HTML des boutons 	 charger, sauver, connecter/déconnecter 
@@ -139,7 +185,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 			<span class="glyphicon glyphicon-off"></span>		
 		</button>'.CR;
 	} else { //non connecté
-		$btnOpenSaveConnect.='		<button id="btn_connect" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#saveModal">
+		$btnOpenSaveConnect.='		<button id="btn_connect" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#connecteModal">
 			<b><span id="span_connect"> </span></b>
 			<span class="glyphicon glyphicon-off"></span>		
 		</button>'.CR;
@@ -192,7 +238,46 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
       </div>
       <div class="modal-body">
               <span id="txtLogout" style="font-weight:bold;"></span>
-              <button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="window.location=\'?logout\'">Ok</button>
+              <button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="window.location=\'./index.php?logout\'">Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- connecte modal -->
+<div class="modal fade" id="connecteModal" tabindex="-1" role="dialog" aria-labelledby="connecteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="connecteModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+              <span id="txtLogin" style="font-weight:bold;"></span>
+              <form method="POST" action="./index.php">
+              <div style="margin:0 0 5px 0"><div id="txtNomU" style="float:left;width:300px;text-align:right;font-weight:bold">nom d\'utilisateur</div>&nbsp;: <input type="text" name="caseNomU" value="" style="width:100px"></div> 
+              <div><div id="txtPwdU" style="float:left;width:300px;text-align:right;font-weight:bold">mot de passe</div>&nbsp;: <input type="password" name="casePwdU" value="" style="width:100px"></div>
+              <input type="hidden" name="action" value="login">
+              <div style="text-align:right"><button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="this.form.submit()">Ok</button></div>
+              </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- error modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="errorModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+              <div id="txtError" style="font-weight:normal;margin:10px 0 10 0"></div>
+              <div class="modal-footer">
+              	<button type="button" class="btn btn-success btn-sm" data-dismiss="modal" onClick="">Ok</button>
+              </div>
       </div>
     </div>
   </div>
@@ -275,7 +360,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 <body onload="BlocklyDuino.init(); /*modifOH - ajoute les fonctionnalités spécifiques à la version PHP */ initVersionPHP()">
 <div class="loading"></div>
     <div id="divTitre">
-		<a href="./index.html"><img id="clearLink" src="media/logo-mini.png" border="0" height="36px" onclick="" />
+		<a href="./index.php"><img id="clearLink" src="media/logo-mini.png" border="0" height="36px" onclick="" />
 		</a> 
 		<b>Blockly@rduino</b> : 
 		<span id="title"></span>
@@ -393,7 +478,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 			</script>
 		</div>
 		<div id="div_tools_button">
-			<a href="./index.html" id="btn_reset" class="btn btn-danger text-left">
+			<a href="./index.php" id="btn_reset" class="btn btn-danger text-left">
 				   <span class="glyphicon glyphicon-off"> </span>
 			</a>
 			<button id="btn_RGB" class="btn btn-primary text-left">

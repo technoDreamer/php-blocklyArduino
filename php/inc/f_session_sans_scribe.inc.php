@@ -12,13 +12,47 @@
 // à incrémenter en cas d'amélioration du contenu
 define ('VERSION_SESSION_USER', 1);
 
+include_once('./inc/f_mysql.inc.php');
+
 function getCasUid() {
 	//authentification et récupération des informations de l'utilisateur
 
-	$login="adminba";
-	infosSession_user_($login);
-	return ($login);
-	
+	//à changer par la fenêtre d'authentification !!!
+	if (!empty($_POST['action'])) { 
+	//if (!empty($_GET['connecte'])) {
+	//	if ($_GET['connecte']=="no") return false;
+		if ($_POST['action']!='login') return false;
+		//print_r($_POST);exit();
+		$login=$_POST['caseNomU']; //"adminba";
+		if (verifPwd($login, $_POST['casePwdU'])) {
+			infosSession_user_($login);
+			//print_r($_SESSION);exit();
+			return ($login);
+		} else {
+			$_SESSION['error']='login';
+		}
+	}
+	return false;
+}
+
+/*--- Fonction ----------------------------------------------------------
+  verifPwd
+ ----------------------
+  vérifie que le mot de passe saisi est correcte
+ ----------------------
+  Entrée :
+ 		login, pwd
+  Sortie :
+    booléen à vrai ou faux selon le résultat 
+-------------------------------*/
+function verifPwd($login, $pwd) {
+	global $mysqli;
+	echo $query="SELECT login FROM utilisateurs WHERE login='$login' AND pwd='".md5($pwd)."'";
+	$res=$mysqli->query($query);
+	if ($res) {
+		if (list($_log)=$res->fetch_row()) return true;
+	}
+	return false;
 }
 
 /*--- Fonction ----------------------------------------------------------
@@ -58,9 +92,16 @@ function infosSession_user_($login) {
             [version] => 1
 
 	*/
-	$donneesUtilisateur=array('nom'=>'invité', 'prenom'=>'', 'profil'=>'administrateur', 'login'=>'adminba');
+	
+	global $mysqli;
+	$query="SELECT nom,prenom,intitule_profil,mail FROM utilisateurs,profils_utilisateurs WHERE login='$login' AND profil=id_profil LIMIT 1";
+	$res=$mysqli->query($query);
+	if ($res) 
+		while (list($_nom,$_prenom,$_profil,$_mail)=$res->fetch_row()) {
+			$donneesUtilisateur=array('nom'=>$_nom, 'prenom'=>$_prenom, 'mail'=>$_mail, 'profil'=>$_profil, 'login'=>$login);
+		}	
+	//$donneesUtilisateur=array('nom'=>'invité', 'prenom'=>'', 'profil'=>'administrateur', 'login'=>'adminba');
 	$_SESSION['_user_']=$donneesUtilisateur;//recupInfosUserLDAP($login); //recup des infos de l'utilisateur dans le ldap
-	$_SESSION['_user_']['login']=$login;
 	//$_SESSION['_user_']['version']=VERSION_SESSION_USER;
 }
 
@@ -82,7 +123,14 @@ function initSession() {
 
 	//ouverture de la session
 	@session_start();
+	if (isset($_GET['logout'])) {
+		unset($_SESSION['_user_']); //on vide la session
+	}
 	$uid = getCasUid();
+	if (!isset($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
+	
+//	print_r($_SESSION);
+//	exit();
 }
 
 
@@ -99,14 +147,14 @@ function initSession() {
 function recupUid() {
 	global $uid;
 
+	@session_start();
 	//demande de déconnexion de la session CAS
 	if (isset($_GET['logout'])) {
-
+		unset($_SESSION['_user_']); //on vide la session
 	}
-	@session_start();
 	
 	//on simule la connexion CAS en tant qu'admin
-	$_SESSION['phpCAS']['user']="adminba";
+	//$_SESSION['phpCAS']['_user_']="adminba";
 	
 	//prend en compte le paramètre d'URL ?logas=xxx comme étant l'uid à appliquer pour afficher les pages
 	// le paramètre  ?logas=no   permet de supprimer cet uid de substitution
@@ -115,26 +163,29 @@ function recupUid() {
 		else {
 			//seul l'admin peut substituer l'identité
 			// ne fonctionne que sur un scribe !!!
-			if(!empty($_SESSION['phpCAS']['user'])) if ($_SESSION['phpCAS']['user']=='adminba') $_SESSION['logas']=$_GET['logas'];
+			if(!empty($_SESSION['_user_']['login'])) if ($_SESSION['_user_']['login']=='admin') $_SESSION['logas']=$_GET['logas'];
 		}
 	}
-	if(!empty($_SESSION['phpCAS']['user'])) 
+	if(!empty($_SESSION['_user_']['login']))  //la session est déjà ouverte
 		if (isset($_SESSION['logas'])) {
 			$uid=$_SESSION['logas']; 
-			$_SESSION['vraiUid']=$_SESSION['phpCAS']['user'];
-		} else $uid = $_SESSION['phpCAS']['user']; 
+			$_SESSION['vraiUid']=$_SESSION['_user_']['login'];
+		} else $uid = $_SESSION['_user_']['login']; 
 	else { //si on ne récupère pas l'uid
 		//on retourne à la page index...
-		header("Location: ./index.php"); 
+		//header("Location: ./index.php"); 
 		//arrêt du script... normalement, on ne passe pas par là...	
-		exit(); 
+		//exit();
+		 
 	}
+	
+	if (!isset($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
 	
 	//on vérifie que le contenu de $_SESSION['_user_'] est correct
 	$sessionPasOk=true;
-	if (!isset($_SESSION['_user_'])) $sessionPasOk=true;
-	else { //$_SESSION['_user_'] est défini
-		if(!isset($_SESSION['_user_']['version'])) $sessionPasOk=true;
+	if (!isset($_SESSION['_user_']['login'])) $sessionPasOk=true;
+	else { //$_SESSION['_user_']['login'] est défini
+		//if(!isset($_SESSION['_user_']['version'])) $sessionPasOk=true;
 		//else if ($_SESSION['_user_']['version']<VERSION_SESSION_USER) $sessionPasOk=true;
 	}
 	

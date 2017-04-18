@@ -20,3 +20,13 @@ Les projets blocklyArduino sont :
  - enregistrés sous forme de fichier xml dans le dossier datas (qui pointe vers php/files) sous forme   login-nom_du_projet-10000000.xml    (login remplacé par le login de l'utilisateur, nom_du_projet par le nom du projet :) et 10000000 par le timestamp de la date et l'heure d'enregistrement)
  - stockés dans la base de données sous la forme d'une association entre l'utilisateur (user) le nom du projet (nom) et le timestamp de la date et heure d'enregistrement. Le nom du fichier physique étant recréé d'après ces infos pour être ouvert. 
 
+#Modifications apportées au logiciel original
+ - au chargement, si aucune carte ni langue n'est choisi, on bascule automatiquement sur lang=fr et carte=arduino_uno
+ - de même, une toolbox basique est sélectionnée, avec la catégorie Arduino préselectionnée
+ - si on est connecté
+   - les bouton Charger, Sauver, et Déconnnecter apparaissent
+   - le nom de projet est affiché
+   - le chargement d'un exemple est considéré comme un nom de projet et peut être sauvegardé par l'utilisateur
+   - chaque utilisateur a accès à ses propres projets
+ - les boutons XML sont renommés en export/import XML qui produisent des exports dont le nom de fichier intègre le nom de projet
+ 

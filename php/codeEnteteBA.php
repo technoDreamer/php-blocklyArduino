@@ -18,7 +18,6 @@ if ($USE_SCRIBE) { //on utilise l'authentification CAS par le scribe
 	include ('./inc/f_ldap_scribe.inc.php');
 
 } else { //pas scribe
-
 	include ('./inc/f_session_sans_scribe.inc.php');
 
 }
@@ -30,6 +29,9 @@ include_once('./inc/f_blocklyArduino.inc.php');
 
 recupUid();
 
+//if ($uid=='') $isConnecte=false;
+$isConnecte=($uid!='');
+//print_r($_SESSION);
 chdir('./..');
 
 	if ($uid=='admin') $nomUser='Admin';
@@ -61,9 +63,11 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	}
 	
 	//on regarde si on doit récupérer le nom du projet dans l'URL
-	$nomProjet='';
+	$nomProjet='non défini...';
+	$nonDefini=true;
 	if (!empty($_GET['nom'])) {
 		$nomProjet=$_GET['nom'];
+		$nonDefini=false;
 	}
 	
 	//on prépare le code JS pour supprimer le nom si c'est un exemple
@@ -72,6 +76,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 		if (stristr($_GET['url'],'/examples/') !== false) { //c'est un exemple
 			$nomFic=substr($_GET['url'],strrpos($_GET['url'],'/')+1,-4);
 			$nomProjet=$nomFic;
+			$nonDefini=false;
 			if (!empty($_GET['nom'])) { //il y a un nom dans l'url... on le retire
 				$codeJSsupNom="	var search = window.location.search;
     var newsearch = search.replace(/([?&]nom=)[^&]*/, '');
@@ -85,7 +90,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	//complément JS exécuté au chargement de la page
 	$codeJSdebut='
 	var nomProjet="'.$nomProjet.'";
-	var aEnregistrer=false;
+	var nonDefini='.($nonDefini?'true':'false').';
 	'.$codeJSsupNom.$codeJSlangCardDefaut.'
 	var uid="'.$uid.'";
 
@@ -109,21 +114,25 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 		 $.ajax({url: "./php/listeFic.php?action=liste", success: function(result){
         $("#listeFicOpen").html(result);
     }});
+	});
+	
+		//$("#connecteModal").modal("show");
 		
 		$(window).unload(function() { //si on quitte la page
 			alert("on sort...");
 		});
-	});
 </script>
 	';
 	
+	
+
+	if ($USE_BDD) {
 	//case ou s'inscrit le nom du projet en cours
 	$caseNomProjet='
 	          <span style="margin:0 0px 0 150px;font-weight:bold;font-style:italic">projet :</span>
             <span id="nomProjet" style="font-weight:bold;background-color:#ddd;padding:2px 10px 2px 10px;font-size:1.2em">'.$nomProjet.'</span>
 ';
-	
-	$isConnecte=true;
+	//$isConnecte=true;
 	$btnOpenSaveConnect='<div id="cont_btn_openSave">'.CR;
 	
 	//code HTML des boutons 	 charger, sauver, connecter/déconnecter 
@@ -141,7 +150,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 			<span class="glyphicon glyphicon-off"></span>		
 		</button>'.CR;
 	} else { //non connecté
-		$btnOpenSaveConnect.='		<button id="btn_connect" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#saveModal">
+		$btnOpenSaveConnect.='		<button id="btn_connect" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#connecteModal">
 			<b><span id="span_connect"> </span></b>
 			<span class="glyphicon glyphicon-off"></span>		
 		</button>'.CR;
@@ -150,6 +159,28 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
 	$btnOpenSaveConnect.='</div>'.CR;
 	
 	$codeHTMLfenetresModal='
+<!-- connecte modal -->
+<div class="modal fade" id="connecteModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>-->
+        <h4 class="modal-title" id="connecteModalLabel">Se connecter</h4>
+      </div>
+      <div class="modal-body" style="text-align:center">
+            <form method="POST" action="./index.php?connecte=1" id="formConnect">
+              <div style="text-align:right;margin-bottom:10px;padding-right:200px"><b id="connecteLogin">login : </b><input type="text" id="caseLogin" value="" style="width:150px"> </div>
+              <div style="text-align:right;margin-bottom:10px;padding-right:200px"><b id="connectePwd">mot de passe : </b><input type="password" id="casePwd" value="" style="width:150px"> </div>
+              <button id="btn_login" type="button" class="btn btn-success btn-sm" data-toggle="modal" onMouseDown="$(\'#_login_\').val($(\'#caseLogin\').val());$(\'#_pwd_\').val($(\'#casePwd\').val());$(\'#formConnect\').submit()">Se connecter</button>
+              <button id="btn_inscrireLogin" type="button" class="btn btn-danger btn-sm" data-toggle="modal" onMouseDown="">S\'inscrire</button>
+              <div id="login_comment">Saisir vos identifiant pour vous connecter...</div>
+              <input type="hidden" name="_login" id="_login_" value=""><input type="hidden" name="_pwd" id="_pwd_" value="">
+            </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 	<!-- open modal -->
 <div class="modal fade" id="openModal" tabindex="-1" role="dialog" aria-labelledby="openModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -200,4 +231,7 @@ if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $
   </div>
 </div>
 ';
+} else { //pas de BDD
+	$caseNomProjet = $btnOpenSaveConnect = $codeHTMLfenetresModal = ''; //si pas de BDD, pas de boutons...
+}
 ?>
