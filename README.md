@@ -35,13 +35,14 @@ Les projets blocklyArduino sont :
  
  #utilisation avec Scribe
  - en cas d'installation sur un serveur Scribe/envole, on profite de l'authentification des utilisateurs par le CAS de Scribe. Pour l'activer, il faut, dans le fichier php/config/config.inc.php, mettre la variable $USE_SCRIBE=1;
- (https://youtu.be/BWPYxpkxYaE)
+ [![](https://github.com/technoDreamer/php-blocklyArduino/tree/master/php/images/vueScribe.png)](https://youtu.be/BWPYxpkxYaE)
  
  #utilisation sans Scribe
  - il faut, dans le fichier php/config/config.inc.php, mettre la variable $USE_SCRIBE=0;   (valeur par défaut)
  - dans ce cas, c'est l'application qui permet la gestion des utilisateurs. Et notamment grace au compte admin (mot de passe "mlkmlk" par défaut !)
  - chaque utilisateur peut changer son mot de passe par le bouton paramètres
  - l'admin peut accéder à la gestion des utilisateurs, pour en créer ou modifier leurs infos
+ [![](https://github.com/technoDreamer/php-blocklyArduino/tree/master/php/images/vueSansScribe.png)](https://youtu.be/z7LBpe5rSgA)
  
  #fonctionnalités en attente...
  - les utilisateurs ont une adresse mail et un profil (prof, élève, admin). Mais hormis le profil admin qui permet de gérer les utilisateurs, ces fonctionnalités n'ont pas d'incidence sur le fonctionnement.
