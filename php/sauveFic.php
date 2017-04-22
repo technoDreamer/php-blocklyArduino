@@ -1,17 +1,38 @@
 <?php
+include('./config/config.inc.php');
+
+if ($USE_SCRIBE) { //on utilise l'authentification CAS par le scribe
+
+	include ('./inc/f_session_scribe.inc.php');
+	//doit être appelé avant initSession qui utilise le ldap pour trouver les infos sur l'utilisateur courant
+	include ('./inc/f_ldap_scribe.inc.php');
+
+} else { //pas scribe
+
+	include ('./inc/f_session_sans_scribe.inc.php');
+
+}
+
+include_once('./inc/c_parametres.inc.php');
 include_once('./inc/f_mysql.inc.php');
+
 include_once('./inc/f_blocklyArduino.inc.php');
+
+initSession();
+
+recupUid();
 
 //print_r($_POST);
 
 //echo /*$_POST['inputxml']."/".*/$_POST['user']."/".$_POST['timeS']."/".$_POST['nomP']."/".$_POST['ecrase'].CR;
 
-if (empty($_POST['inputxml']) || empty($_POST['user']) || empty($_POST['timeS']) || empty($_POST['nomP']) || empty($_POST['ecrase'])) { //une des valeurs est vide => on quitte
+if (empty($_POST['inputxml']) || empty($_POST['timeS']) || empty($_POST['nomP']) || empty($_POST['ecrase'])) { //une des valeurs est vide => on quitte
 	echo '1;Données manquantes pour enregistrer le projet';
 	exit();
 }
 
-function sauveProjet($nom, $nomFic, $uid, $ts, $ecrase) {
+function sauveProjet($nom, $nomFic, $ts, $ecrase) {
+	global $uid;
 	global $cheminFichiersXML;
 	global $mysqli;
 	
@@ -70,9 +91,9 @@ function sauveProjet($nom, $nomFic, $uid, $ts, $ecrase) {
 	return '';
 }
 
-$nomFic=$_POST['user'].'-'.$_POST['nomP'].'-'.$_POST['timeS'].'.xml';
+$nomFic=$uid.'-'.$_POST['nomP'].'-'.$_POST['timeS'].'.xml';
 
-if (($msg=sauveprojet($_POST['nomP'],$nomFic,$_POST['user'],$_POST['timeS'], $_POST['ecrase']))!='') { //erreur lors de la sauvegarde du projet
+if (($msg=sauveProjet($_POST['nomP'],$nomFic,$_POST['timeS'], $_POST['ecrase']))!='') { //erreur lors de la sauvegarde du projet
 	echo '1;'.$msg;
 	exit();
 }

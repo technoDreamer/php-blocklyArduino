@@ -252,7 +252,7 @@ class Parametres {
 			$sql_query="CREATE TABLE `".$this->tableBdd."` (
 				`id` INT NOT NULL AUTO_INCREMENT,
 			  `nomParam` varchar(50) NOT NULL default '',
-			  `valeur` varchar(255) NOT NULL default '',
+			  `valeur` varchar(2000) NOT NULL default '',
 			  PRIMARY KEY  (id)
 				) ENGINE=MyISAM";
 			if ($mysqli->query($sql_query)) $msgCreaTables.="Table <b>'param'</b> créée.\n<br>";

@@ -1,8 +1,25 @@
 /* //modifOH */
-#btn_save, #btn_open, #btn_connect, #btn_deconnect {
+#btn_save, #btn_open, #btn_connect, #btn_deconnect, #btn_param {
     float: left;
     padding-left: 10px;
 		margin-right:10px
+}
+
+#dNomProjet {
+	float:left;
+	padding:9px 30px 0 0;
+}
+
+#sTxtNomProjet {
+	font-weight:bold;
+	font-style:italic;
+}
+
+#nomProjet {
+	font-weight:bold;
+	background-color:#ddd;
+	padding:2px 10px 2px 10px;
+	font-size:1.2em;
 }
 
 #cont_btn_openSave {

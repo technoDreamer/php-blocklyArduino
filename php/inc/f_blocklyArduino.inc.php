@@ -31,6 +31,31 @@ function listeFicOpen($userId) {
 } // fin de fonction listeFicOpen
 
 /*------------------------------------------
+ Fonction : selectProfil
+-------------------------------------
+  
+-------------------------------------
+ - Entrée :
+ - Sortie :
+---------------------------------------------*/
+function selectProfil($attribHTML) {
+	global $mysqli;
+
+	$sel='<select id="sProfil"'.$attribHTML.'>';
+	$rqt="SELECT id_profil,intitule_profil FROM profils_utilisateurs WHERE 1";
+	$res=$mysqli->query($rqt);
+	if ($res) {
+		while (list($_id, $_profil)=$res->fetch_row()) {
+			$sel.='<option value="'.$_id.'">'.$_profil.'</option>';
+		}
+	}
+	$sel.='</select>';
+	return $sel;
+	
+} // fin de fonction selectProfil
+
+
+/*------------------------------------------
  Fonction : presenteListeFichiers
 -------------------------------------
   

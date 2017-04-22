@@ -29,6 +29,13 @@ include_once('./inc/f_blocklyArduino.inc.php');
 chdir('./..');
 
 recupUid();
+
+//print_r($_SESSION);
+
+$isAdmin=false;
+if (isset($_SESSION['_user_']['profil'])) $isAdmin=($_SESSION['_user_']['profil']=='admin');
+
+
 $isConnecte=true;
 	$ajoutURL=array();
 //gère la langue et la carte par défaut
@@ -45,25 +52,46 @@ if (empty($uid)) { //non connecté
 }
 else { //utilisateur connecté
 	if ($uid=='admin') $nomUser='Admin';
-	else $nomUser=$_SESSION['_user_']['prenom']." ".$_SESSION['_user_']['nom'];
+	else $nomUser=($_SESSION['_user_']['prenom']!=''?$_SESSION['_user_']['prenom']." ":"").$_SESSION['_user_']['nom'];
 }
 
-	$errorLogin=false;
-	$ajoutCat='';
-			
-	if (empty($_GET['lang'])) {$manque=true; $ajoutURL[]='lang=fr';} else $ajoutURL[]='lang='.$_GET['lang']; //fr
-	if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card=arduino_uno';} else $ajoutURL[]='card='.$_GET['card']; //arduino_uno;
 	$dejaLance=false;
 	if (isset($_SESSION['premLancement'])) if($_SESSION['premLancement']==0) {
 		$dejaLance=true;
 	}
+
+//paramètres par défaut - génériques, perso ou commun
+$paramAll=litParam('param__all_');
+$paramU=litParam('param_'.$uid);
+
+$langDef='fr'; //valeurs générique
+$cardDef='arduino_uno';
+$toolboxDef='CAT_LOGIC,CAT_LOOPS,CAT_MATH,CAT_ARRAY,CAT_TEXT,CAT_VARIABLES,CAT_FUNCTIONS,CAT_ARDUINO';
+$toolboxUrlDef='toolbox_arduino_all';
+
+if ($paramU!=false) { //les params de l'utilisateur par défaut
+	list($toolboxUrlDef,$toolboxDef,$langDef,$cardDef)=explode('§', $paramU);
+} else if ($paramAll!=false) { //sinon ceux pour tout le monde
+	list($toolboxUrlDef,$toolboxDef,$langDef,$cardDef)=explode('§', $paramAll);
+}
+
+//echo "$toolboxDef . $langDef , $cardDef";exit();
+	$errorLogin=false;
+	$ajoutCat='';
+			
+	if (empty($_GET['lang'])) {$manque=true; $ajoutURL[]='lang='.$langDef;} else $ajoutURL[]='lang='.$_GET['lang']; //fr
+	if (empty($_GET['card'])) {$manque=true; $ajoutURL[]='card='.$cardDef;} else $ajoutURL[]='card='.$_GET['card']; //arduino_uno;
 	$_SESSION['premLancement']=0;
-	if (!$dejaLance) if (empty($_GET['toolbox'])) {
-		$manque=true; 
-		$ajoutURL[]='toolbox=toolbox_algo';
-		$ajoutCat='if (window.localStorage.toolboxids.indexOf("CAT_ARDUINO")==-1) window.localStorage.toolboxids=window.localStorage.toolboxids+",CAT_ARDUINO";';
-	} else 
-		$ajoutURL[]='toolbox='.$_GET['toolbox']; //arduino_uno;
+	if (!$dejaLance) {
+		if (empty($_GET['toolbox'])) { //premier lancement ou juste après login et pas de toolbox définie
+			$manque=true; 
+			$ajoutURL[]='toolbox='.$toolboxUrlDef;
+			$ajoutCat='window.localStorage.toolboxids=="'.$toolboxDef.'"'.CR.'window.localStorage.toolbox="'.$toolboxUrlDef.'";'.CR; //if (window.localStorage.toolboxids.indexOf("CAT_ARDUINO")==-1) window.localStorage.toolboxids=window.localStorage.toolboxids+",CAT_ARDUINO";';
+		} else 
+			$ajoutURL[]='toolbox='.$_GET['toolbox']; //arduino_uno;
+			$ajoutCat='window.localStorage.toolbox="'.$_GET['toolbox'].'"; //'.$toolboxDef.CR;
+		}
+	
 	if ($manque) {
 		$prems=true;
 		foreach ($ajoutURL as $_ajout) {
@@ -72,16 +100,7 @@ else { //utilisateur connecté
 			$chAjout.=$_ajout;
 		}
 		$codeJSlangCardDefaut='window.location="blocklyArduino.php?'.$chAjout.'";';
-		/*
-		'
-		var chUrl = window.location.search;
-		var newchUrl = chUrl;
-		if (newchUrl.search("?")==-1) newchUrl+="?";
-		else newchUrl+="&";
-		newchUrl+= "'.$chAjout.'";
-    window.history.pushState(chUrl, "Title", newchUrl);
-    alert(newchUrl);
-';*/
+
 	} else { //on ne manque pas, donc on ne recharge pas la page
 		if (!empty($_SESSION['error'])) if ($_SESSION['error']=='login') {
 			$_SESSION['error']='';
@@ -90,7 +109,7 @@ else { //utilisateur connecté
 	}
 	
 	//on regarde si on doit récupérer le nom du projet dans l'URL
-	$nomProjet='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+	$nomProjet='&nbsp;&nbsp;&nbsp;&nbsp;';
 	if (!empty($_GET['nom'])) {
 		$nomProjet=$_GET['nom'];
 	}
@@ -127,18 +146,37 @@ else { //utilisateur connecté
 	var aEnregistrer=false;
 	'.$codeJSsupNom.$codeJSlangCardDefaut.'
 	var uid="'.$uid.'";
-		'.$codeJSerror.$ajoutCat.'
-	function verifSaisieNomFichier(texte)
-	{
-		var regex = /^[a-zA-Z0-9._-\séèàçäëïöüôîûâê]+$/;
-		if(!regex.test(texte)) {
-			alert("Le nom de projet saisi est incorrect. Sont autorisées :\n - les lettres\n - les chiffres\n - les caractères \'espace\', - et _\nMerci de modifier le nom saisi.");
-			return false;
-		} else {
-				//alert("Good !");
-				return true;
-		}
-	}
+	sessionStorage.setItem("lang", "'.$_GET['lang'].'");
+	sessionStorage.setItem("card", "'.$_GET['card'].'");
+	'.$codeJSerror.$ajoutCat.'
+		$(document).ready(function() {
+			$("#_casePwdU,#_caseNomU").keydown(function( event ) { 
+				if ( event.which == 13 ) {
+	   		//event.preventDefault();
+	   			bA_connecte();
+	  		}
+  		});
+			$("#caseNomP").keydown(function( event ) { 
+				if ( event.which == 13 ) {
+	   			bA_prepareXmlFileAndSave();
+	  		}
+  		});
+			$(".inputU").keydown(function( event ) { 
+				if ( event.which == 13 ) {
+	   			bA_saveInfosUser();
+	  		}
+  		});
+			$("#caseChgPwdU1, #caseChgPwdU2").keydown(function( event ) { 
+				if ( event.which == 13 ) {
+					$("#btn_chgPwd").click();  		
+				}
+  		});
+/*			$("#caseChgPwdU2").keydown(function( event ) { 
+				if ( event.which == 13 ) {
+					$("#btn_chgPwd").click();  	  		
+				}
+  		});*/
+  	});
 	';
 	
 	//complément JS exécuté à la fin du chargement de la page - en fin de code HTML
@@ -150,6 +188,7 @@ else { //utilisateur connecté
 		 $.ajax({url: "./php/listeFic.php?action=liste", success: function(result){
         $("#listeFicOpen").html(result);
     }});
+    
 		$(window).unload(function() { //si on quitte la page
 			alert("on sort...");
 		});
@@ -159,12 +198,6 @@ else { //utilisateur connecté
 	
 	//case ou s'inscrit le nom du projet en cours
 	$caseNomProjet='';
-	if ($isConnecte) $caseNomProjet='
-	          <div style="position:absolute;top:7px;right:500px;z-index:120">
-	          	<span style="font-weight:bold;font-style:italic">projet :</span>
-            	<span id="nomProjet" style="font-weight:bold;background-color:#ddd;padding:2px 10px 2px 10px;font-size:1.2em">'.$nomProjet.'</span>
-            </div>
-';
 	
 	
 //	$isConnecte=true;
@@ -172,26 +205,51 @@ else { //utilisateur connecté
 	
 	//code HTML des boutons 	 charger, sauver, connecter/déconnecter 
 	if ($isConnecte) { //connecté
-		$btnOpenSaveConnect.='		<button id="btn_open" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#openModal">
-			<b><span id="span_open"> </span> </b>
+		$btnOpenSaveConnect.='
+		<div id="dNomProjet">
+	          	<span id="sTxtNomProjet">projet :</span>
+            	<span id="nomProjet" style="">'.$nomProjet.'</span>
+    </div>
+    <button id="btn_open" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#openModal">
+			<b><span id="span_open"> </span> &nbsp;</b>
 			<span class="glyphicon glyphicon-open"></span>		
 		</button>
 		<button id="btn_save" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#saveModal">
-			<b><span id="span_save"> </span> </b>
+			<b><span id="span_save"> </span> &nbsp;</b>
 			<span class="glyphicon glyphicon-save"></span>		
 		</button>
 		<button id="btn_deconnect" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#deconnecteModal" alt="Se déconnecter">
-			<b>'.$nomUser.' </span> </b>
+			<b><span>'.$nomUser.' </span> &nbsp;</b>
 			<span class="glyphicon glyphicon-off"></span>		
+		</button>
+		<button id="btn_param" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#paramUserModal" alt="Paramètres">
+			&nbsp;<span class="glyphicon glyphicon-cog"></span>&nbsp;		
 		</button>'.CR;
 	} else { //non connecté
-		$btnOpenSaveConnect.='		<button id="btn_connect" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#connecteModal">
+		$btnOpenSaveConnect.='		<button id="btn_connect" type="button" class="btn btn-success btn-sm btn_ver" data-toggle="modal" data-target="#connecteModal">
 			<b><span id="span_connect"> </span></b>
 			<span class="glyphicon glyphicon-off"></span>		
 		</button>'.CR;
 	}
 	
 	$btnOpenSaveConnect.='</div>'.CR;
+	
+	$dispNiScribeNiAdmin='display:none;';
+	if ($isAdmin) {
+		$dispPasAdmin='display:none;';
+		$disp4Admin=''; //block';
+	} else {
+		$dispPasAdmin='';
+		$disp4Admin='display:none;'; //block';
+	}
+	
+	if ($USE_SCRIBE) {
+		$dispPasScribe='display:none;';
+	} else {
+		$dispPasScribe='';
+		if ($isAdmin) $dispNiScribeNiAdmin='';
+	}
+	
 	
 	$codeHTMLfenetresModal='
 	<!-- open modal -->
@@ -220,8 +278,8 @@ else { //utilisateur connecté
         <h4 class="modal-title" id="saveModalLabel"></h4>
       </div>
       <div class="modal-body" style="text-align:center">
-              <b id="saveIdName">nom du projet : </b><input type="text" id="caseNomP" value="'.$nomProjet.'" style="width:60%"> 
-              <button id="btn_saveProj" type="button" class="btn btn-success btn-sm" data-toggle="modal" onMouseDown="if (verifSaisieNomFichier($(\'#caseNomP\').val())) $(this).click()">Enregistrer</button>
+              <b id="saveIdName">nom du projet : </b><input type="text" id="caseNomP" value="'.($nomProjet=='&nbsp;&nbsp;&nbsp;&nbsp;'?'':$nomProjet).'" style="width:60%"> 
+              <button id="btn_saveProj" type="button" class="btn btn-success btn-sm" data-toggle="modal">Enregistrer</button>
               <div id="save_comment">xxx</div>
       </div>
     </div>
@@ -237,8 +295,8 @@ else { //utilisateur connecté
         <h4 class="modal-title" id="deconnecteModalLabel"></h4>
       </div>
       <div class="modal-body">
-              <span id="txtLogout" style="font-weight:bold;"></span>
-              <button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="window.location=\'./index.php?logout\'">Ok</button>
+              <div id="txtLogout" style="font-weight:bold;"></div>
+              <div style="text-align:right"><button type="button" id="btnDeconnecte" class="btn btn-success btn-sm" data-toggle="modal">Ok</button></div>
       </div>
     </div>
   </div>
@@ -254,12 +312,42 @@ else { //utilisateur connecté
       </div>
       <div class="modal-body">
               <span id="txtLogin" style="font-weight:bold;"></span>
-              <form method="POST" action="./index.php">
-              <div style="margin:0 0 5px 0"><div id="txtNomU" style="float:left;width:300px;text-align:right;font-weight:bold">nom d\'utilisateur</div>&nbsp;: <input type="text" name="caseNomU" value="" style="width:100px"></div> 
-              <div><div id="txtPwdU" style="float:left;width:300px;text-align:right;font-weight:bold">mot de passe</div>&nbsp;: <input type="password" name="casePwdU" value="" style="width:100px"></div>
+              <form method="POST" action="./index.php" id="fLogin">
+              <div style="margin:0 0 5px 0"><div id="txtNomU" style="float:left;width:300px;text-align:right;font-weight:bold">nom d\'utilisateur</div>&nbsp;: <input type="text" id="_caseNomU" name="caseNomU" value="" style="width:100px"></div> 
+              <div><div id="txtPwdU" style="float:left;width:300px;text-align:right;font-weight:bold">mot de passe</div>&nbsp;: <input type="password" id="_casePwdU" name="casePwdU" value="" style="width:100px"></div>
               <input type="hidden" name="action" value="login">
-              <div style="text-align:right"><button type="button" class="btn btn-success btn-sm" data-toggle="modal" onClick="this.form.submit()">Ok</button></div>
+              <div style="text-align:right"><button type="button" id="btnConnecte" class="btn btn-success btn-sm" data-toggle="modal">Ok</button></div>
               </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- param modal -->
+<div class="modal fade" id="paramUserModal" tabindex="-1" role="dialog" aria-labelledby="paramUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="paramUserModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+              <!-- sauve paramètres -->
+              <div id="txtSaveParam" style="font-weight:bold;"></div>
+              <div style="text-align:right">
+              <button type="button" id="btnParamSave4all" class="btn btn-success btn-sm" data-toggle="modal" style="'.$disp4Admin.'margin:0 10px 0 0"><span id="txtBtnSaveParam4all">Pour tout le monde</span></button>
+              <button type="button" id="btnParamUserSave4U" class="btn btn-success btn-sm" data-toggle="modal" style="'.$disp4Admin.'"><span id="txtBtnSaveParam4U">Pour vous</span></button>
+              <button type="button" id="btnParamUserSave" class="btn btn-success btn-sm" data-toggle="modal" style="'.$dispPasAdmin.'"><span id="txtBtnSaveParam">Ok</span></button></div>
+              
+              <!-- changement mot de passe -->
+              <div id="txtChgPwdU" style="'.$dispPasScribe.'border-top:1px SOLID lightgrey;margin-top:20px;padding:10px 0 0 0;font-weight:bold">changer le mot de passe : </div>
+              <div style="'.$dispPasScribe.'position:relative;width:100%;height:30px;"><div id="txtChgPwdU2" style="width:300px;text-align:right;float:left;margin:0 5px 0 0">Nouveau mot de passe : </div><div style="float:left"><input type="password" id="caseChgPwdU1" value="" style="width:100px"></div></div>
+              <div style="'.$dispPasScribe.'position:relative;width:100%;height:30px;"><div id="txtChgPwdU3" style="width:300px;text-align:right;float:left;margin:0 5px 0 0">Confirmer le nouveau mot de passe : </div><div style="float:left"><input type="password" id="caseChgPwdU2" value="" style="width:100px"></div></div>
+              
+              <div style="'.$dispPasScribe.'text-align:right"><button id="btn_chgPwd" type="button" class="btn btn-success btn-sm" data-toggle="modal">Enregistrer</button></div>
+              
+              <!-- gestion des comptes utilisateurs -->
+              <div style="'.$dispNiScribeNiAdmin.'text-align:center;padding:10px;border-top:1px SOLID lightgrey;margin-top:20px"><button id="btn_gestUser" style="width:200px" type="button" class="btn btn-success btn-sm" data-toggle="modal" onMouseDown="bA_openGestUser()"><span id="btnGestUser">Gérer les utilisateurs</span></button></div>
       </div>
     </div>
   </div>
@@ -275,15 +363,75 @@ else { //utilisateur connecté
       </div>
       <div class="modal-body">
               <div id="txtError" style="font-weight:normal;margin:10px 0 10 0"></div>
-              <div class="modal-footer">
+              <div style="text-align:right">
               	<button type="button" class="btn btn-success btn-sm" data-dismiss="modal" onClick="">Ok</button>
               </div>
       </div>
     </div>
   </div>
 </div>
+
+	<!-- gestUser modal -->
+<div class="modal fade" id="gestUserModal" tabindex="-1" role="dialog" aria-labelledby="gestUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="gestUserModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+              <!-- gestion des comptes utilisateurs -->
+              <div style="'.$dispNiScribeNiAdmin.'text-align:center"><button id="btnAddUser" style="width:200px" type="button" class="btn btn-success btn-sm" data-toggle="modal"><span id="btnAddUser">Gérer les utilisateurs</span></button></div>
+              
+              <!-- liste des utilisateurs -->
+              <div id="listeUsers" style="border-top:1px SOLID lightgrey;margin-top:20px;padding:10px 0 0 0;">aucun utilisateur...</div>
+              
+      </div>
+    </div>
+  </div>
+</div>
+
+	<!-- addModifUser modal -->
+<div class="modal fade" id="addModifUserModal" tabindex="-1" role="dialog" aria-labelledby="addModifUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+        <h4 class="modal-title" id="addModifUserModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+      				<style>
+      					#dTabUsers {text-align:center}
+      					#tabUsers {text-align:right}
+      					.tLabelU {padding:10px;font-weight:bold;font-size:0.9em}
+      					.tCaseU {text-align:left}
+      					.commentU {font-weight:bold;font-size:0.7em;font-style:italic;text-align:right}
+      					.oblig::after {content:"*";color:red;font-weight:bold}
+      				</style>
+      				<!-- tableau nouveau/modif des comptes utilisateurs -->
+              <div id="dTabUsers">
+              <table align="center" id="tabUsers">
+              	<tr><td class="tLabelU oblig">login</td><td class="tCaseU"><input id="uLogin" type="text" class="inputU" name="" value=""/></td></tr>
+              	<tr><td class="tLabelU oblig">nom</td><td class="tCaseU"><input id="uNom" type="text" class="inputU" name="" value=""/></td></tr>
+              	<tr><td class="tLabelU">prénom</td><td class="tCaseU"><input id="uPrenom" type="text" class="inputU" name="" value=""/></td></tr>
+              	<tr id="trComMail"><td colspan="2" class="commentU"  id="tdComMail">Saisir 2 fois pour confirmer</td></tr>
+              	<tr><td class="tLabelU">@ mail</td><td class="tCaseU"><input id="uMail1" type="text" class="inputU" name="" value=""/>&nbsp;&nbsp;<input id="uMail2" class="inputU" type="text" name="" value=""/></td></tr>
+              	<tr id="trComPwd"><td colspan="2" class="commentU" id="tdComPwd">Saisir 2 fois pour confirmer</td></tr>
+              	<tr><td class="tLabelU oblig">mot de passe</td><td class="tCaseU"><input id="uPwd1" type="password" class="inputU" name="" value=""/>&nbsp;&nbsp;<input id="uPwd2" type="password" class="inputU" name="" value=""/></td></tr>
+              	<tr><td class="tLabelU">profil</td><td class="tCaseU">'.selectProfil(' class="inputU"').'</td></tr>
+      				</table>
+      				<div style="font-style:italic"><span class="oblig"></span> champs obligatoire</div>
+              </div>
+              <div style="text-align:right"><button id="btn_saveU" type="button" class="btn btn-success btn-sm" data-toggle="modal">Enregistrer</button></div>
+              
+      </div>
+    </div>
+  </div>
+</div>
+
 ';
 	
+//;function(e){ if (e.keyCode == 13) alert(\'coucou\');}
 	
 ?><html>
 <head>
@@ -651,6 +799,10 @@ else { //utilisateur connecté
 				</form>
 			  </div>
       </div>
+      <!-- modifOH -->
+      <div style="margin:0 0 0 20px"><b>PHP-BlocklyArduino</b> - <i>V1.0 du 22/04/2017</i> - (<a href="">github</a>)</div>
+      <div style="margin:0 0 20px 60px">développé par Olivier HACQUARD (<a href="mailto:Olivier%20HACQUARD%20<olivier.hacquard@ac-besancon.fr>?subject=PHP-BlocklyArduino">olivier.hacquard@ac-besancon.fr</a>)</div>
+      	
     </div>
   </div>
 </div>

@@ -18,13 +18,13 @@ function getCasUid() {
 	//authentification et récupération des informations de l'utilisateur
 
 	//à changer par la fenêtre d'authentification !!!
-	if (!empty($_POST['action'])) { 
+	if (!empty($_GET['action'])) { 
 	//if (!empty($_GET['connecte'])) {
 	//	if ($_GET['connecte']=="no") return false;
-		if ($_POST['action']!='login') return false;
+		if ($_GET['action']!='login') return false;
 		//print_r($_POST);exit();
-		$login=$_POST['caseNomU']; //"adminba";
-		if (verifPwd($login, $_POST['casePwdU'])) {
+		$login=$_GET['login']; //"adminba";
+		if (verifPwd($login, $_GET['pwd'])) {
 			infosSession_user_($login);
 			//print_r($_SESSION);exit();
 			return ($login);
@@ -47,7 +47,7 @@ function getCasUid() {
 -------------------------------*/
 function verifPwd($login, $pwd) {
 	global $mysqli;
-	echo $query="SELECT login FROM utilisateurs WHERE login='$login' AND pwd='".md5($pwd)."'";
+	echo $query="SELECT login FROM utilisateurs WHERE login='".secMy($login)."' AND (pwd='".md5($pwd)."' OR pwd='$pwd')";
 	$res=$mysqli->query($query);
 	if ($res) {
 		if (list($_log)=$res->fetch_row()) return true;
@@ -92,7 +92,7 @@ function infosSession_user_($login) {
             [version] => 1
 
 	*/
-	
+	if (empty($login)) return 0;
 	global $mysqli;
 	$query="SELECT nom,prenom,intitule_profil,mail FROM utilisateurs,profils_utilisateurs WHERE login='$login' AND profil=id_profil LIMIT 1";
 	$res=$mysqli->query($query);
@@ -125,9 +125,10 @@ function initSession() {
 	@session_start();
 	if (isset($_GET['logout'])) {
 		unset($_SESSION['_user_']); //on vide la session
+		unset($_SESSION['premLancement']);
 	}
 	$uid = getCasUid();
-	if (!isset($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
+	if (empty($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
 	
 //	print_r($_SESSION);
 //	exit();
@@ -151,6 +152,7 @@ function recupUid() {
 	//demande de déconnexion de la session CAS
 	if (isset($_GET['logout'])) {
 		unset($_SESSION['_user_']); //on vide la session
+		unset($_SESSION['premLancement']);
 	}
 	
 	//on simule la connexion CAS en tant qu'admin
@@ -179,7 +181,7 @@ function recupUid() {
 		 
 	}
 	
-	if (!isset($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
+	if (empty($_SESSION['premLancement'])) $_SESSION['premLancement']=1;
 	
 	//on vérifie que le contenu de $_SESSION['_user_'] est correct
 	$sessionPasOk=true;

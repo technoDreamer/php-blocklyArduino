@@ -157,7 +157,17 @@ Code2.initLanguage = function() {
  	$('#deconnecteModalLabel').text(MSG2['deconnecteModalLabel']);
  	$('#connecteModalLabel').text(MSG2['connecteModalLabel']);
  	$('#errorModalLabel').text(MSG2['errorModalLabel']);
+ 	$('#paramUserModalLabel').text(MSG2['paramUserModalLabel']);
  	$('#txtLogout').text(MSG2['txtLogout']);
+ 	$('#txtSaveParam').text(MSG2['txtSaveParam']);
+ 	$('#txtChgPwdU').text(MSG2['txtChgPwdU']);
+ 	$('#txtChgPwdU2').text(MSG2['txtChgPwdU2']);
+ 	$('#txtChgPwdU3').text(MSG2['txtChgPwdU3']);
+ 	$('#txtBtnSaveParam').text(MSG2['txtBtnSaveParam']);
+ 	$('#txtBtnSaveParam4all').text(MSG2['txtBtnSaveParam4all']);
+ 	$('#gestUserModalLabel').text(MSG2['gestUserModalLabel']);
+ 	$('#btnGestUser').text(MSG2['btnGestUser']);
+ 	$('#btnAddUser').text(MSG2['btnAddUser']);
  	$('#txtNomU').text(MSG2['txtNomU']);
  	$('#txtPwdU').text(MSG2['txtPwdU']);
  	$('#btnSaveProj').text(MSG2['btnSaveProj']);
