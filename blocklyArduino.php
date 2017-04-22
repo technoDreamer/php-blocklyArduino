@@ -800,8 +800,8 @@ if ($paramU!=false) { //les params de l'utilisateur par défaut
 			  </div>
       </div>
       <!-- modifOH -->
-      <div style="margin:0 0 0 20px"><b>PHP-BlocklyArduino</b> - <i>V1.0 du 22/04/2017</i> - (<a href="">github</a>)</div>
-      <div style="margin:0 0 20px 60px">développé par Olivier HACQUARD (<a href="mailto:Olivier%20HACQUARD%20<olivier.hacquard@ac-besancon.fr>?subject=PHP-BlocklyArduino">olivier.hacquard@ac-besancon.fr</a>)</div>
+      <div style="margin:0 0 0 20px"><b>PHP-BlocklyArduino</b> - <i>V1.0 du 22/04/2017</i> - (<a href="https://github.com/technoDreamer/php-blocklyArduino.git" target="_blank">github</a>)</div>
+      <div style="margin:0 0 20px 60px;font-style:italic">- développé par Olivier HACQUARD (<a href="mailto:Olivier%20HACQUARD%20<olivier.hacquard@ac-besancon.fr>?subject=PHP-BlocklyArduino">olivier.hacquard@ac-besancon.fr</a>)</div>
       	
     </div>
   </div>
