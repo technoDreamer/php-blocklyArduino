@@ -35,6 +35,7 @@ Les projets blocklyArduino sont :
  
  #utilisation avec Scribe
  - en cas d'installation sur un serveur Scribe/envole, on profite de l'authentification des utilisateurs par le CAS de Scribe. Pour l'activer, il faut, dans le fichier php/config/config.inc.php, mettre la variable $USE_SCRIBE=1;
+ (https://youtu.be/BWPYxpkxYaE)
  
  #utilisation sans Scribe
  - il faut, dans le fichier php/config/config.inc.php, mettre la variable $USE_SCRIBE=0;   (valeur par défaut)
