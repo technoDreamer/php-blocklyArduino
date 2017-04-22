@@ -134,6 +134,76 @@ function cadreLoginDeconnexion($uid, $top, $right) {
 	<div id="cadreLogin" style="float:left;top:'.$top.'px;right:'.$right.'px">&nbsp;&nbsp;<i>'.$nomUser.'</i>&nbsp;&nbsp;<span id="sepCadreLogin">|</span> <div id="iconeDeconnexion" class="iconeDecnx1" title="Se déconnecter" onClick="window.location=\'./index.php?logout\'"></div></div>';
 } // fin de fonction cadreLoginDeconnexion
 
+	/*--------------------
+	 fonction verifTablesPHP-BlocklyArduino
+	 --------------------------
+	 vérifie et créé si nécessaire les tables nécessaires au fonctionnement de PHP-BlocklyArduino
+	----------------------*/
+	function verifTablesPHP_BlocklyArduino() {
+		global $mysqli;
+		global $msgCreaTables;
+		
+		if (!existTable( "fichiers")) {
+			// création des tables
+			$sql_query="CREATE TABLE IF NOT EXISTS `fichiers` (
+  `idFic` int(11) NOT NULL AUTO_INCREMENT,
+  `nom` varchar(50) NOT NULL,
+  `user` varchar(50) NOT NULL,
+  `dateHeure` bigint(20) NOT NULL,
+  PRIMARY KEY (`idFic`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;";
+			if ($mysqli->query($sql_query)) $msgCreaTables.="Table <b>'fichiers'</b> créée.\n<br>";
+/*		}
+		
+		if (!existTable( "profils_utilisateurs")) {*/
+			// création des tables
+			$sql_query="CREATE TABLE IF NOT EXISTS `profils_utilisateurs` (
+  `id_profil` int(11) NOT NULL,
+  `intitule_profil` varchar(20) NOT NULL,
+  PRIMARY KEY (`id_profil`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;";
+			if ($mysqli->query($sql_query)) $msgCreaTables.="Table <b>'profils_utilisateurs'</b> créée.\n<br>";
+			
+			$sql_query="INSERT INTO `profils_utilisateurs` (`id_profil`, `intitule_profil`) VALUES
+(1, 'admin'),
+(2, 'prof'),
+(3, 'eleve');";
+			if ($mysqli->query($sql_query)) $msgCreaTables.="Profils ajoutés.\n<br>";
+/*		}
+		
+		if (!existTable( "utilisateurs")) {*/
+			// création des tables
+			$sql_query="CREATE TABLE IF NOT EXISTS `utilisateurs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `login` varchar(30) NOT NULL,
+  `pwd` varchar(50) NOT NULL,
+  `nom` varchar(30) NOT NULL,
+  `prenom` varchar(30) NOT NULL,
+  `profil` int(11) NOT NULL,
+  `mail` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;";
+			if ($mysqli->query($sql_query)) $msgCreaTables.="Table <b>'utilisateurs'</b> créée.\n<br>";
+			
+			$sql_query="INSERT INTO `utilisateurs` (`login`, `pwd`, `nom`, `prenom`, `profil`, `mail`) VALUES
+('admin', 'c69ac9060b8186de6c027bde2c4fec17', 'admin', '', 1, '');";
+			if ($mysqli->query($sql_query)) $msgCreaTables.="Compte admin ajouté.\n<br>";
+		}
+}
+
+/*------------------------------------------
+ Fonction : getIsAdmin
+-------------------------------------
+  
+-------------------------------------
+ - Entrée :
+ - Sortie :
+---------------------------------------------*/
+function userIsAdmin() {
+	$isAdmin=false;
+	if (isset($_SESSION['_user_']['profil'])) $isAdmin=(($_SESSION['_user_']['profil']=='admin') || ($_SESSION['_user_']['profil']=='administrateur'));
+	return $isAdmin;
+} // fin de fonction getIsAdmin
 
 
 //-------------------- partie exécutée ---------------------------------------------------
@@ -143,5 +213,9 @@ define('BRCR',"<br/>\n");
 define('BR',"<br/>");
 
 if (file_exists('./config/config.inc.php')) include('./config/config.inc.php');
+
+verifTablesPHP_BlocklyArduino();
+
+
 
 ?>

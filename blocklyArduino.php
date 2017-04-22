@@ -26,15 +26,14 @@ include_once('./inc/c_parametres.inc.php');
 include_once('./inc/f_mysql.inc.php');
 
 include_once('./inc/f_blocklyArduino.inc.php');
-chdir('./..');
 
 recupUid();
 
+chdir('./..');
+
+$isAdmin=userIsAdmin();
+
 //print_r($_SESSION);
-
-$isAdmin=false;
-if (isset($_SESSION['_user_']['profil'])) $isAdmin=($_SESSION['_user_']['profil']=='admin');
-
 
 $isConnecte=true;
 	$ajoutURL=array();

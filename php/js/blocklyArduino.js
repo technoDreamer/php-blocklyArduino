@@ -120,7 +120,7 @@ function bA_saveInfosUser() {
 		if ($("#uLogin").val()=='' || $("#uNom").val()=='' ||/* $("#uMail1").val()=='' || */$("#uPwd1").val()=='') {alert('Saisie incomplète...'); return false;}
 		if ($("#uMail1").val()!=$("#uMail2").val()) {alert('Les adresses mail ne correspondent pas...'); return false;}
 		if ($("#uPwd1").val()!=$("#uPwd2").val()) {alert('Les mots de passe ne correspondent pas...'); return false;}
-		if (!verifSaisie('txt',$("#uLogin").val())) {alert('Le login n\'est pas conforme...'); return false;}
+		if (!verifSaisie('login',$("#uLogin").val())) {alert('Le login n\'est pas conforme...'); return false;}
 		if (!verifSaisie('txt',$("#uNom").val())) {alert('Le nom n\'est pas conforme...'); return false;}
 		if ($("#uPrenom").val()!='') if (!verifSaisie('txt',$("#uPrenom").val())) {alert('Le prénom n\'est pas conforme...'); return false;}
 		if ($("#uMail1").val()!='') if (!verifSaisie('mail',$("#uMail1").val())) {alert('L\' adresse mail n\'est pas conforme...'); return false;}
