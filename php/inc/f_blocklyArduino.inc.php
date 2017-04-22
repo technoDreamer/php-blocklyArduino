@@ -205,6 +205,35 @@ function userIsAdmin() {
 	return $isAdmin;
 } // fin de fonction getIsAdmin
 
+/*------------------------------------------
+ Fonction : afficheVersion
+-------------------------------------
+  
+-------------------------------------
+ - Entrée :
+ - Sortie :
+---------------------------------------------*/
+function afficheVersion() {
+	global $_version, $_dateVersion;
+	
+	return "version $_version du $_dateVersion";
+} // fin de fonction afficheVersion
+
+/*------------------------------------------
+ Fonction : afficheComplementAbout
+-------------------------------------
+  
+-------------------------------------
+ - Entrée :
+ - Sortie :
+---------------------------------------------*/
+function afficheComplementAbout() {
+	global $_version, $_dateVersion;
+	
+	//return "version $_version du $_dateVersion";
+	return '<div style="margin:0 0 0 20px"><b>PHP-BlocklyArduino</b> - <i>'.afficheVersion().'</i> - (<a href="https://github.com/technoDreamer/php-blocklyArduino.git" target="_blank">github</a>)</div>
+      <div style="margin:0 0 20px 20px;font-style:italic">- développé par Olivier HACQUARD (<a href="mailto:Olivier%20HACQUARD%20<olivier.hacquard@ac-besancon.fr>?subject=PHP-BlocklyArduino">olivier.hacquard@ac-besancon.fr</a>)</div>';
+} // fin de fonction afficheComplementAbout
 
 //-------------------- partie exécutée ---------------------------------------------------
 define('CR',"\n");
@@ -216,6 +245,9 @@ if (file_exists('./config/config.inc.php')) include('./config/config.inc.php');
 
 verifTablesPHP_BlocklyArduino();
 
+$_version='0.0';
+$_dateVersion='--/--/----';
+if (file_exists('./_version.inc.php')) include ('./_version.inc.php');
 
 
 ?>
